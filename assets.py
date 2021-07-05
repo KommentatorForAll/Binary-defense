@@ -1,7 +1,12 @@
 import arcade
 
+SCALE = 4
+
 
 class Tower(arcade.Sprite):
+
+    def __init__(self, sprite):
+        super().__init__(sprite, scale=SCALE)
 
     def update(self):
         pass
@@ -9,10 +14,16 @@ class Tower(arcade.Sprite):
 
 class Path(arcade.Sprite):
 
-    def __init__(self, rot, sprite):
-        super().__init__(sprite)
+    def __init__(self, rot, sprite, pos):
+        super().__init__(sprite, scale=SCALE)
         self.rot = rot
-        self.turn_right(rot*90)
+        self.turn_right(rot * 90)
+        self.center_x = pos[0]*SCALE*16+32
+        self.center_y = pos[1]*SCALE*16+32
+
+        print(pos)
+        print(self.center_x, self.center_y)
+        print()
 
     def update(self):
         pass
@@ -21,7 +32,7 @@ class Path(arcade.Sprite):
 class Enemy(arcade.Sprite):
 
     def __init__(self, hp, speed, dmg, sprite, drops, path_list):
-        super().__init__(sprite, hit_box_algorithm="Detailed")
+        super().__init__(sprite, scale=SCALE)
         self.hp = hp
         self.speed = speed
         self.dmg = dmg
@@ -61,7 +72,7 @@ class Enemy(arcade.Sprite):
 class Bullet(arcade.Sprite):
 
     def __init__(self, speed, dmg, rot, sprite, enemy_list, pierce=1):
-        super().__init__(sprite, hit_box_algorithm="Detailed")
+        super().__init__(sprite, scale=SCALE)
         self.turn_right(rot)
         self.speed = speed
         self.dmg = dmg
