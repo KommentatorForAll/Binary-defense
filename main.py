@@ -1,7 +1,9 @@
 import os
+import time
 
 import arcade
 import assets
+from pyglet.gl import GL_NEAREST
 
 
 class TowerDefence(arcade.Window):
@@ -11,6 +13,8 @@ class TowerDefence(arcade.Window):
 
         arcade.set_background_color((0, 0, 0))
 
+        self.set_update_rate(1/20)
+
         # self.assets_all = None
         self.assets_paths = None
         self.assets_enemies = None
@@ -18,6 +22,9 @@ class TowerDefence(arcade.Window):
 
         self.availables_enemies = None
         self.availables_maps = None
+        self.t0 = time.time()
+
+        self.map = None
 
         self.setup()
 
@@ -49,8 +56,8 @@ class TowerDefence(arcade.Window):
                 while i < l:
                     drops[e_info[i]] = int(e_info[i + 1])
                     i += 2
-            self.availables_enemies[e_info[0]] = assets.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]), f"resources/images/{e_info[1]}",
-                                                              drops, self.assets_paths)
+            self.availables_enemies[e_info[0]] = assets.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
+                                                              f"resources/images/{e_info[1]}", drops, self.assets_paths)
 
         enemy_file.close()
 
@@ -64,40 +71,37 @@ class TowerDefence(arcade.Window):
 
         # Maps
         for filename in os.listdir("resources/maps"):
-            if not filename.endswith(".map"):
+            if not filename.endswith(".mapinfo"):
                 continue
-            map_name = filename[:-4]
+            map_name = filename[:-8]
             print(map_name)
-            map = arcade.SpriteList(use_spatial_hash=True)
-            map_file = open("./resources/maps/"+filename)
-            map_data = map_file.read().split("\n")
-            i = 0
-            map_data.reverse()
-            for row in map_data:
-                j = 0
-                for p in row:
-                    if p == '#':
-                        pass
-                    elif p == '-':
-                        pass
-                    else:
-                        rot = int(p)
-                        map.append(assets.Path(rot, "./resources/images/path.png", (j, i)))
-                    j += 1
-                i += 1
-
-            self.availables_maps[map_name] = map
+            kwargs = {}
+            for info in open(f"./resources/maps/{filename}").read().split("\n"):
+                k, v = info.split("=")
+                kwargs[k] = [int(x) for x in v.split(",")] if v.find(",") != -1 else v
+                # print(kwargs[k])
+            self.availables_maps[map_name] = assets.Map(**kwargs)
+            # self.availables_maps[map_name] = map
 
     def load_map(self, map_name):
-        map = self.availables_maps[map_name]
-        self.assets_paths = map
+        self.map = self.availables_maps[map_name]
+        self.assets_paths = self.map.map
+        self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_1"]))
+
+    def on_update(self, delta_time):
+        self.assets_paths.update()
+        self.assets_enemies.update()
+        self.assets_towers.update()
 
     def on_draw(self):
         arcade.start_render()
 
-        self.assets_paths.draw()
-        self.assets_towers.draw()
-        self.assets_enemies.draw()
+        self.assets_paths.draw(filter=GL_NEAREST)
+        self.assets_towers.draw(filter=GL_NEAREST)
+        self.assets_enemies.draw(filter=GL_NEAREST)
+
+    def update(self, delta_time):
+        pass
 
 
 def main():
