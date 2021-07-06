@@ -2,8 +2,10 @@ from typing import Optional, Dict
 
 import arcade
 import numpy as np
+import random
 
 SCALE = 4
+ENEMY_SPREAD = 25
 
 
 class Path(arcade.Sprite):
@@ -32,7 +34,8 @@ class Path(arcade.Sprite):
 
 class Enemy(arcade.Sprite):
 
-    def __init__(self, hp: int, speed: int, dmg: int, sprite: str, drops: dict, path_list: arcade.SpriteList):
+    def __init__(self, hp: int, speed: int, dmg: int, sprite: str, drops: dict, path_list: arcade.SpriteList,
+                 enemy_names: Dict[str, "Enemy"], enemies: arcade.SpriteList):
         super().__init__(sprite, scale=SCALE)
         self.sprite = sprite
         self.hp = hp
@@ -43,6 +46,8 @@ class Enemy(arcade.Sprite):
         self.drops = drops
         self.age = 0
         self.tag: Optional[str] = None
+        self.enemy_names = enemy_names
+        self.enemies = enemies
 
     def _get_rot(self):
         return self._rot
@@ -80,11 +85,11 @@ class Enemy(arcade.Sprite):
         if len(col_p) == 1:
             path = col_p[0]
             if path.target[0] == 0:
-                if abs(path.target[1]-self.center_x) <= self.speed:
+                if abs(path.target[1] - self.center_x) <= self.speed:
                     self.center_x = path.target[1]
                     self.rot = path.rot
             elif path.target[0] == 1:
-                if abs(path.target[1]-self.center_y) <= self.speed:
+                if abs(path.target[1] - self.center_y) <= self.speed:
                     self.center_y = path.target[1]
                     self.rot = path.rot
             if path.tag == 'f':
@@ -100,11 +105,36 @@ class Enemy(arcade.Sprite):
             self.kill()
 
     def kill(self):
+        drop_amount = sum(self.drops.values())
+        do_spread = drop_amount > 1
+        for e in self.drops.keys():
+            cnt = self.drops[e]
+            enemy = self.enemy_names[e]
+            for i in range(cnt):
+                enemy = enemy.clone()
+                # enemy.position = self.position
+                enemy.rot = self.rot
+                enemy.paths = self.paths
+                if do_spread:
+                    spread = self._get_spread()
+                    enemy.position = self.center_x + self.change_x * spread, \
+                        self.center_y + self.change_y * spread
+                else:
+                    enemy.position = self.position
+                self.enemies.append(enemy)
 
         super().kill()
 
+    def _get_spread(self):
+        spread = random.random() * ENEMY_SPREAD
+        path = self.collides_with_list(self.paths)[0]
+        if path.rot == self.rot:
+            return spread
+        else:
+            return spread * 0.5
+
     def clone(self):
-        return Enemy(self.hp, self.speed, self.dmg, self.sprite, self.drops, self.paths)
+        return Enemy(self.hp, self.speed, self.dmg, self.sprite, self.drops, self.paths, self.enemy_names, self.enemies)
 
 
 class Map:
@@ -115,8 +145,6 @@ class Map:
         self.map: arcade.SpriteList = self.load_map(map_name)
         self.__dict__.update(kwargs)
         self.load_map(map_name)
-        # print(self.start)
-        # print(self.finish)
 
     def load_map(self, map_filename: str):
         map_sprites = arcade.SpriteList(use_spatial_hash=True)
@@ -192,7 +220,7 @@ class Tower(arcade.Sprite):
         if self.selected:
             self.range_detector.draw_hit_box((255, 0, 0), 2)
         if not self.activated:
-            print(self.hitbox_color)
+            # print(self.hitbox_color)
             self.draw_hit_box(self.hitbox_color, 2)
         self.bullets.draw(**kwargs)
         super().draw()
@@ -207,7 +235,6 @@ class Bullet(arcade.Sprite):
                  pierce: int = 1):
         super().__init__(sprite, scale=SCALE)
         self.turn_right(rot)
-        print(rot)
         self.forward(speed)
         self.dmg: int = dmg
         self.enemies: arcade.SpriteList = enemy_list
@@ -262,7 +289,6 @@ class Proxy(Tower):
         print(get_angle((1, 0), (enemy.center_y - self.center_y, enemy.center_x - self.center_x)))
         b = Bullet(5, self.dmg, +get_angle((0, 1), (enemy.center_y - self.center_y, enemy.center_x - self.center_x)),
                    "./resources/images/fireball.png", self, self.enemies, pierce=1)
-        # print(b)
         b.position = self.position
         self.bullets.append(b)
         super().shoot(enemy)
@@ -295,7 +321,10 @@ class Surface:
 
 class Shop:
 
-    def __init__(self, towers: Dict[str, Tower], pos: tuple, path_list: arcade.SpriteList, tower_list: arcade.SpriteList, scale: float = 2):
+    def __init__(self, towers: Dict[str, Tower], pos: tuple,
+                 path_list: arcade.SpriteList, tower_list: arcade.SpriteList,
+                 scale: float = 2
+                 ):
         self.towers: Dict[str, Tower] = towers
         self.shop_sprites: Dict[arcade.Sprite, Tower] = {}
         self.sprites: arcade.SpriteList = arcade.SpriteList()
@@ -317,9 +346,9 @@ class Shop:
 
     def setup(self):
         spacing = 75
-        total_width = len(self.towers)*spacing + self.offset[1]*2
+        total_width = len(self.towers) * spacing + self.offset[1] * 2
         print(f"total width: {total_width}, pos: {self.pos}, offset: {self.offset}")
-        i = self.pos[0]-total_width/2 + self.offset[1]
+        i = self.pos[0] - total_width / 2 + self.offset[1]
         for img_name, tower in self.towers.items():
             spr = arcade.Sprite(img_name, scale=self.scale)
             spr.position = (i, self.pos[1])
@@ -330,12 +359,12 @@ class Shop:
 
             i += spacing
         i -= spacing
-        i += self.offset[0]*2
+        i += self.offset[0] * 2
         self.width = total_width
 
     def draw(self, **kwargs):
         arcade.draw_rectangle_filled(self.pos[0], self.pos[1], self.width,
-                                     self.offset[1]*2, (0, 127, 0))
+                                     self.offset[1] * 2, (0, 127, 0))
         self.sprites.draw(**kwargs)
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -357,7 +386,6 @@ class Shop:
             self.hold_object.position = x, y
             cols: list = self.hold_object.collides_with_list(self.path_list)
             cols.extend(self.hold_object.collides_with_list(self.tower_list))
-            print(len(cols))
             if len(self.hold_object.collides_with_list(self.path_list)) > 0 \
                     or len(self.hold_object.collides_with_list(self.tower_list)) > 0:
                 self.tower_list.remove(self.hold_object)
@@ -377,10 +405,10 @@ class Shop:
             cols.extend(self.hold_object.collides_with_list(self.tower_list))
             if len(self.hold_object.collides_with_list(self.path_list)) > 0 \
                     or len(self.hold_object.collides_with_list(self.tower_list)) > 0:
-                print("not placeable")
+                # print("not placeable")
                 self.hold_object.hitbox_color = self.hitbox_color_not_placeable
             else:
-                print("placeable")
+                # print("placeable")
                 self.hold_object.hitbox_color = self.hitbox_color_placeable
 
 

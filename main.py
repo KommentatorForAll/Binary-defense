@@ -73,17 +73,18 @@ class TowerDefenceMap(arcade.View):
                     drops[e_info[i]] = int(e_info[i + 1])
                     i += 2
             self.availables_enemies[e_info[0]] = assets.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
-                                                              f"resources/images/{e_info[1]}", drops, self.assets_paths)
+                                                              f"resources/images/{e_info[1]}", drops, self.assets_paths,
+                                                              self.availables_enemies, self.assets_enemies)
 
         enemy_file.close()
 
         # Towers
-        tower_file = open("resources/infos/towers.txt")
-        towers = tower_file.read().split("\n")
-        for tower in towers:
-            if tower[0] == "#":
-                continue
-            # t_info = tower.split(" ")
+        # tower_file = open("resources/infos/towers.txt")
+        # towers = tower_file.read().split("\n")
+        # for tower in towers:
+        #     if tower[0] == "#":
+        #         continue
+        #     t_info = tower.split(" ")
 
         # Maps
         for filename in os.listdir("resources/maps"):
