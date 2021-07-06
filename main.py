@@ -5,10 +5,15 @@ import assets
 from pyglet.gl import GL_NEAREST
 
 
-class TowerDefence(arcade.Window):
+WINDOW_WIDTH = 1280
+WINDOW_HEIGHT = 720
+WINDOW_NAME = "Binary Defence"
+
+
+class TowerDefenceMap(arcade.Window):
 
     def __init__(self):
-        super().__init__(1280, 720, "Binary Defence")
+        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
 
         arcade.set_background_color((0, 0, 0))
 
@@ -84,11 +89,11 @@ class TowerDefence(arcade.Window):
     def load_map(self, map_name: str):
         self.map = self.availables_maps[map_name]
         self.assets_paths = self.map.map
-        self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_1"]))
-        f = assets.Firewall(self.assets_enemies)
-        self.assets_enemies.append(f)
-        f.center_x = 128
-        f.center_y = 256
+        self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_10"]))
+        f = assets.Proxy(self.assets_enemies)
+        self.assets_towers.append(f)
+        f.center_x = 256
+        f.center_y = 400
 
     def on_update(self, delta_time: float):
         self.assets_paths.update()
@@ -100,14 +105,23 @@ class TowerDefence(arcade.Window):
 
         self.assets_paths.draw(filter=GL_NEAREST)
         self.assets_towers.draw(filter=GL_NEAREST)
+        for tower in self.assets_towers:
+            tower.draw(filter=GL_NEAREST)
+        self.assets_towers.draw_hit_boxes((255, 0, 0), 2)
         self.assets_enemies.draw(filter=GL_NEAREST)
 
     def update(self, delta_time):
         pass
 
 
+class TowerDefenceTitleScreen(arcade.Window):
+
+    def __init__(self):
+        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
+
+
 def main():
-    td = TowerDefence()
+    td = TowerDefenceMap()
     td.load_map("0")
     arcade.run()
 
