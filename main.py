@@ -1,5 +1,4 @@
 import os
-import time
 
 import arcade
 import assets
@@ -22,7 +21,6 @@ class TowerDefence(arcade.Window):
 
         self.availables_enemies = None
         self.availables_maps = None
-        self.t0 = time.time()
 
         self.map = None
 
@@ -83,12 +81,16 @@ class TowerDefence(arcade.Window):
             self.availables_maps[map_name] = assets.Map(**kwargs)
             # self.availables_maps[map_name] = map
 
-    def load_map(self, map_name):
+    def load_map(self, map_name: str):
         self.map = self.availables_maps[map_name]
         self.assets_paths = self.map.map
         self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_1"]))
+        f = assets.Firewall(self.assets_enemies)
+        self.assets_enemies.append(f)
+        f.center_x = 128
+        f.center_y = 256
 
-    def on_update(self, delta_time):
+    def on_update(self, delta_time: float):
         self.assets_paths.update()
         self.assets_enemies.update()
         self.assets_towers.update()
