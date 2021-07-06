@@ -10,14 +10,12 @@ WINDOW_HEIGHT = 720
 WINDOW_NAME = "Binary Defence"
 
 
-class TowerDefenceMap(arcade.Window):
+class TowerDefenceMap(arcade.View):
 
     def __init__(self):
-        super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
+        super().__init__()
 
         arcade.set_background_color((0, 0, 0))
-
-        self.set_update_rate(1/20)
 
         # self.assets_all = None
         self.assets_paths = None
@@ -29,6 +27,8 @@ class TowerDefenceMap(arcade.Window):
 
         self.map = None
 
+        self.shop = None
+
         self.setup()
 
     def setup(self):
@@ -36,6 +36,19 @@ class TowerDefenceMap(arcade.Window):
         self.assets_paths = arcade.SpriteList(use_spatial_hash=True)
         self.assets_enemies = arcade.SpriteList()
         self.assets_towers = arcade.SpriteList(use_spatial_hash=True)
+
+        self.shop = assets.Shop(
+            {
+                "./resources/images/firewall.png": assets.Firewall(self.assets_enemies),
+                "./resources/images/proxy.png": assets.Proxy(self.assets_enemies)
+            },
+            (
+                WINDOW_WIDTH/2,
+                WINDOW_HEIGHT-50
+            ),
+            self.assets_paths,
+            self.assets_towers
+        )
 
         self.availables_enemies = {}
         self.availables_maps = {}
@@ -53,10 +66,10 @@ class TowerDefenceMap(arcade.Window):
                 continue
             e_info = enemy.split(" ")
             drops = {}
-            l = len(e_info)
-            if l > 5:
+            length = len(e_info)
+            if length > 5:
                 i = 5
-                while i < l:
+                while i < length:
                     drops[e_info[i]] = int(e_info[i + 1])
                     i += 2
             self.availables_enemies[e_info[0]] = assets.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
@@ -70,7 +83,7 @@ class TowerDefenceMap(arcade.Window):
         for tower in towers:
             if tower[0] == "#":
                 continue
-            t_info = tower.split(" ")
+            # t_info = tower.split(" ")
 
         # Maps
         for filename in os.listdir("resources/maps"):
@@ -107,22 +120,37 @@ class TowerDefenceMap(arcade.Window):
         self.assets_towers.draw(filter=GL_NEAREST)
         for tower in self.assets_towers:
             tower.draw(filter=GL_NEAREST)
-        self.assets_towers.draw_hit_boxes((255, 0, 0), 2)
+        # self.assets_towers.draw_hit_boxes((255, 0, 0), 2)
         self.assets_enemies.draw(filter=GL_NEAREST)
+
+        self.shop.draw(filter=GL_NEAREST)
 
     def update(self, delta_time):
         pass
 
+    def on_mouse_press(self, x, y, button, modifiers):
+        self.shop.on_mouse_press(x, y, button, modifiers)
 
-class TowerDefenceTitleScreen(arcade.Window):
+    def on_mouse_release(self, x, y, button, modifiers):
+        self.shop.on_mouse_release(x, y, button, modifiers)
+
+    def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
+        self.shop.on_mouse_drag(x, y, dx, dy, button, modifiers)
+
+
+class GameWindow(arcade.Window):
 
     def __init__(self):
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
+        self.set_update_rate(1/20)
+
+        game_map = TowerDefenceMap()
+        self.show_view(game_map)
+        game_map.load_map("0")
 
 
 def main():
-    td = TowerDefenceMap()
-    td.load_map("0")
+    GameWindow()
     arcade.run()
 
 
