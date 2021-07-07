@@ -1,4 +1,6 @@
 map_name=0.map
 name=0
 start=0,4
-finish=10,7
+finish=9,6
+data=500
+lives=100

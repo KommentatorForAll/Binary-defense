@@ -27,28 +27,31 @@ class TowerDefenceMap(arcade.View):
 
         self.map = None
 
-        self.shop = None
+        self.shop: assets.Shop = None
+        self.info_ui: assets.InfoUI = assets.InfoUI(self)
+
+        self.data = 0
+        self._lives = 0
 
         self.setup()
+
+    def _get_lives(self):
+        return self._lives
+
+    def _set_lives(self, amount):
+        self._lives = amount
+        if amount <= 0:
+            print("you died")
+            print("move to endscreen")
+            return
+
+    lives = property(_get_lives, _set_lives)
 
     def setup(self):
         # self.assets_all = arcade.SpriteList()
         self.assets_paths = arcade.SpriteList(use_spatial_hash=True)
         self.assets_enemies = arcade.SpriteList()
         self.assets_towers = arcade.SpriteList(use_spatial_hash=True)
-
-        self.shop = assets.Shop(
-            {
-                "./resources/images/firewall.png": assets.Firewall(self.assets_enemies),
-                "./resources/images/proxy.png": assets.Proxy(self.assets_enemies)
-            },
-            (
-                WINDOW_WIDTH/2,
-                WINDOW_HEIGHT-50
-            ),
-            self.assets_paths,
-            self.assets_towers
-        )
 
         self.availables_enemies = {}
         self.availables_maps = {}
@@ -73,19 +76,42 @@ class TowerDefenceMap(arcade.View):
                     drops[e_info[i]] = int(e_info[i + 1])
                     i += 2
             self.availables_enemies[e_info[0]] = assets.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
-                                                              f"resources/images/{e_info[1]}", drops, self.assets_paths,
-                                                              self.availables_enemies, self.assets_enemies)
+                                                              f"resources/images/{e_info[1]}", drops,
+                                                              self.availables_enemies, self)
 
         enemy_file.close()
 
         # Towers
-        # tower_file = open("resources/infos/towers.txt")
-        # towers = tower_file.read().split("\n")
-        # for tower in towers:
-        #     if tower[0] == "#":
-        #         continue
-        #     t_info = tower.split(" ")
+        tower_file = open("resources/infos/towers.txt")
+        towers_data = tower_file.read().split("\n")
+        towers = []
+        for tower in towers_data:
+            if tower[0] == "#":
+                continue
+            info = {}
+            t_info = tower.split(" ")
+            info["name"] = t_info[0]
+            info["tower"] = eval(f"assets.{t_info[2]}(self.assets_enemies)")
+            info["description"] = " ".join(t_info[4:])
+            info["price"] = int(t_info[3])
+            info["img"] = t_info[1]
+            towers.append(info)
 
+        print(towers)
+
+        self.shop = assets.Shop(
+            towers,
+            # {
+            #    "./resources/images/firewall.png": assets.Firewall(self.assets_enemies),
+            #    "./resources/images/proxy.png": assets.Proxy(self.assets_enemies),
+            #    "./resources/images/clam_tk.png": assets.Clam(self.assets_enemies)
+            # },
+            (
+                WINDOW_WIDTH/2,
+                WINDOW_HEIGHT-50
+            ),
+            self
+        )
         # Maps
         for filename in os.listdir("resources/maps"):
             if not filename.endswith(".mapinfo"):
@@ -104,15 +130,18 @@ class TowerDefenceMap(arcade.View):
         self.map = self.availables_maps[map_name]
         self.assets_paths = self.map.map
         self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_10"]))
-        f = assets.Proxy(self.assets_enemies)
-        self.assets_towers.append(f)
-        f.center_x = 256
-        f.center_y = 400
+        # f = assets.Clam(self.assets_enemies)
+        # self.assets_towers.append(f)
+        # f.center_x = 256
+        # f.center_y = 400
+        self.data = int(self.map.data)
+        self.lives = int(self.map.lives)
 
     def on_update(self, delta_time: float):
         self.assets_paths.update()
         self.assets_enemies.update()
         self.assets_towers.update()
+        self.info_ui.update()
 
     def on_draw(self):
         arcade.start_render()
@@ -123,6 +152,8 @@ class TowerDefenceMap(arcade.View):
             tower.draw(filter=GL_NEAREST)
         # self.assets_towers.draw_hit_boxes((255, 0, 0), 2)
         self.assets_enemies.draw(filter=GL_NEAREST)
+
+        self.info_ui.draw(filter=GL_NEAREST)
 
         self.shop.draw(filter=GL_NEAREST)
 
@@ -143,7 +174,7 @@ class GameWindow(arcade.Window):
 
     def __init__(self):
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
-        self.set_update_rate(1/20)
+        self.set_update_rate(1/40)
 
         game_map = TowerDefenceMap()
         self.show_view(game_map)
