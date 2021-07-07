@@ -154,13 +154,13 @@ class Map:
         self.map: arcade.SpriteList = self.load_map(map_name)
 
     def load_map(self, map_filename: str):
-        print("loading map")
+        # print("loading map")
         map_sprites = arcade.SpriteList(use_spatial_hash=True)
         map_file = open("./resources/maps/" + map_filename)
         map_data = map_file.read().split("\n")
         i = 0
         map_data.reverse()
-        print(self.finish)
+        # print(self.finish)
         for row in map_data:
             j = 0
             for p in row:
@@ -171,12 +171,12 @@ class Map:
                 else:
                     rot = int(p)
                     path = Path(rot, "./resources/images/path.png", (j, i))
-                    print(j, i)
+                    # print(j, i)
                     if (j, i) == self.start:
                         # self.start_path = path
                         path.tag = 's'
                     elif [j, i] == self.finish:
-                        print("found finish")
+                        # print("found finish")
                         path.tag = 'f'
                     map_sprites.append(path)
                 j += 1
@@ -348,7 +348,7 @@ class ShopItem(arcade.Sprite):
 
     def __init__(self, **kwargs):
         self.__dict__.update(**kwargs)
-        super().__init__(kwargs["img"])
+        super().__init__(kwargs["img"], scale=kwargs["scale"] if kwargs.keys().__contains__("scale") else 1)
         self.tower: Tower = self.tower
         self.price: int = self.price
         self.name: str = self.name
@@ -361,13 +361,14 @@ class Shop:
                  game: main.TowerDefenceMap,
                  scale: float = 2
                  ):
-        self.towers: List[ShopItem] = [ShopItem(**kwargs) for kwargs in towers]
+        self.towers: List[ShopItem] = [ShopItem(scale=SCALE/2, **kwargs) for kwargs in towers]
         self.shop_sprites: Dict[arcade.Sprite, Tower] = {}
         self.sprites: arcade.SpriteList = arcade.SpriteList()
         self.scale: float = scale
         self.pos: tuple = pos
         self.width: int = 0
         self.offset: tuple = (50, 50)
+        self.cur_price: int = 0
         self.hitbox_color_not_placeable = arcade.csscolor.RED
         self.hitbox_color_placeable = arcade.csscolor.GREEN
 
@@ -411,6 +412,7 @@ class Shop:
                 self.game.info_ui.warn_text = "Not enough data to buy"
                 return
             self.hold_object = obj.tower.clone()
+            self.cur_price = obj.price
             self.hold_object.activated = False
             self.hold_object.selected = True
             self.game.assets_towers.append(self.hold_object)
@@ -430,6 +432,8 @@ class Shop:
                 return
             self.hold_object.selected = False
             self.hold_object.activated = True
+
+            self.game.data -= self.cur_price
 
             self.hold_object = None
 
