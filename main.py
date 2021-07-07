@@ -27,8 +27,8 @@ class TowerDefenceMap(arcade.View):
 
         self.map = None
 
-        self.shop: assets.Shop = None
-        self.info_ui: assets.InfoUI = assets.InfoUI(self)
+        self.shop: assets.ui.Shop = None
+        self.info_ui: assets.ui.InfoUI = assets.ui.InfoUI(self)
 
         self.data = 0
         self._lives = 0
@@ -75,7 +75,7 @@ class TowerDefenceMap(arcade.View):
                 while i < length:
                     drops[e_info[i]] = int(e_info[i + 1])
                     i += 2
-            self.availables_enemies[e_info[0]] = assets.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
+            self.availables_enemies[e_info[0]] = assets.enemies.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
                                                               f"resources/images/{e_info[1]}", drops,
                                                               self.availables_enemies, self)
 
@@ -91,7 +91,7 @@ class TowerDefenceMap(arcade.View):
             info = {}
             t_info = tower.split(" ")
             info["name"] = t_info[0]
-            info["tower"] = eval(f"assets.{t_info[2]}(self.assets_enemies)")
+            info["tower"] = eval(f"assets.towers.{t_info[2]}(self.assets_enemies)")
             info["description"] = " ".join(t_info[4:])
             info["price"] = int(t_info[3])
             info["img"] = t_info[1]
@@ -99,7 +99,7 @@ class TowerDefenceMap(arcade.View):
 
         print(towers)
 
-        self.shop = assets.Shop(
+        self.shop = assets.ui.Shop(
             towers,
             # {
             #    "./resources/images/firewall.png": assets.Firewall(self.assets_enemies),
@@ -123,7 +123,7 @@ class TowerDefenceMap(arcade.View):
                 k, v = info.split("=")
                 kwargs[k] = [int(x) for x in v.split(",")] if v.find(",") != -1 else v
                 # print(kwargs[k])
-            self.availables_maps[map_name] = assets.Map(**kwargs)
+            self.availables_maps[map_name] = assets.maps.Map(**kwargs)
             # self.availables_maps[map_name] = map
 
     def load_map(self, map_name: str):
