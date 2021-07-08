@@ -63,6 +63,7 @@ class Shop:
             total_offset += spacing
 
         self.shop_background.position = self.pos
+        self.game.add_sprite(self.shop_background, True)
 
     def draw(self, **kwargs):
         self.shop_background.draw()
@@ -78,7 +79,7 @@ class Shop:
         self.cur_price = obj.price
         self.hold_object.activated = False
         self.hold_object.selected = True
-        self.game.assets_towers.append(self.hold_object)
+        self.game.add_sprite(self.hold_object)
 
     def on_mouse_release(self, x, y, button, modifiers):
         if self.hold_object is None:
@@ -87,7 +88,7 @@ class Shop:
             self.hold_object.position = x, y
             cols: list = self.hold_object.collides_with_list(self.game.assets_towers)
             cols.extend(self.hold_object.collides_with_list(self.game.assets_paths))
-            if len(cols) > 0:
+            if len(self.hold_object.collides_with_list(self.game.assets_solid)) > 0:
                 self.game.assets_towers.remove(self.hold_object)
                 self.hold_object = None
                 return
@@ -128,6 +129,7 @@ class InfoUI:
         self.middle = self.topleft_pos[0] + self.size[0]/2
         self.background: arcade.Sprite = arcade.Sprite("./resources/images/info.png")
         self.background.position = self.center_pos
+        self.game.add_sprite(self.background, True)
         self.sprites.append(self.background)
         self._warn_text: str = ""
         self._warn_age = 0
@@ -168,9 +170,9 @@ class InfoUI:
     def draw(self, **kwargs):
         # arcade.draw_rectangle_filled(self.center_pos[0], self.center_pos[1], self.size[0], self.size[1], (0, 0, 128))
         self.background.draw()
-        arcade.draw_point(self.info_box_topleft[0], self.info_box_topleft[1], (255, 255, 255), 2)
-        arcade.draw_point(self.stats_box_topleft[0], self.stats_box_topleft[1], (255, 255, 255), 2)
-        arcade.draw_point(self.button_box_topleft[0], self.button_box_topleft[1], (255, 255, 255), 2)
+        # arcade.draw_point(self.info_box_topleft[0], self.info_box_topleft[1], (255, 255, 255), 2)
+        # arcade.draw_point(self.stats_box_topleft[0], self.stats_box_topleft[1], (255, 255, 255), 2)
+        # arcade.draw_point(self.button_box_topleft[0], self.button_box_topleft[1], (255, 255, 255), 2)
 
         arcade.draw_text(f"Data: {self.game.data}",
                          self.stats_box_topleft[0] + self.default_offset[0],

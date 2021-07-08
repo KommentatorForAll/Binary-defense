@@ -18,10 +18,11 @@ class TowerDefenceMap(arcade.View):
 
         arcade.set_background_color((0, 0, 0))
 
-        # self.assets_all = None
-        self.assets_paths = None
-        self.assets_enemies = None
-        self.assets_towers = None
+        # self.assets_all = arcade.SpriteList()
+        self.assets_paths: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.assets_enemies: arcade.SpriteList = arcade.SpriteList()
+        self.assets_towers: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
+        self.assets_solid: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
         self.availables_enemies = None
         self.availables_maps = None
@@ -52,9 +53,6 @@ class TowerDefenceMap(arcade.View):
 
     def setup(self):
         # self.assets_all = arcade.SpriteList()
-        self.assets_paths = arcade.SpriteList(use_spatial_hash=True)
-        self.assets_enemies = arcade.SpriteList()
-        self.assets_towers = arcade.SpriteList(use_spatial_hash=True)
 
         self.availables_enemies = {}
         self.availables_maps = {}
@@ -100,7 +98,7 @@ class TowerDefenceMap(arcade.View):
             info["img"] = t_info[1]
             towers.append(info)
 
-        print(towers)
+        # print(towers)
 
         self.shop = assets.ui.Shop(
             towers,
@@ -129,9 +127,19 @@ class TowerDefenceMap(arcade.View):
             self.availables_maps[map_name] = assets.maps.Map(**kwargs)
             # self.availables_maps[map_name] = map
 
+    def add_sprite(self, spr: arcade.Sprite, solid=False):
+        if isinstance(spr, assets.towers.Tower):
+            self.assets_towers.append(spr)
+            self.assets_solid.append(spr)
+        elif isinstance(spr, assets.enemies.Enemy):
+            self.assets_enemies.append(spr)
+        elif solid:
+            self.assets_solid.append(spr)
+
     def load_map(self, map_name: str):
         self.map = self.availables_maps[map_name]
         self.assets_paths = self.map.map
+        self.assets_solid.extend(self.assets_paths)
         self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_10"]))
         # f = assets.Clam(self.assets_enemies)
         # self.assets_towers.append(f)
