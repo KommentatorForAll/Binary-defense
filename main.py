@@ -108,7 +108,7 @@ class TowerDefenceMap(arcade.View):
             # },
             (
                 WINDOW_WIDTH/2,
-                WINDOW_HEIGHT-50
+                WINDOW_HEIGHT-54
             ),
             self
         )
