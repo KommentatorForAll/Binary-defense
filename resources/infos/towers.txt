@@ -1,4 +1,4 @@
 #name shop_icon class price description
 Firewall ./resources/images/firewall.png Firewall 100 A Firewall shooting in 8 directions damaging a lot of packages
-Proxy ./resources/images/proxy.png Proxy 75 The Proxy targets individual packages dealing a reasonable amount of damage
-Clam_Scan ./resources/images/clam_tk.png Clam 150 Clam-scan, even though a community driven service, can stop packages real fast
+Proxy ./resources/images/proxy_shop.png Proxy 75 The Proxy targets individual packages dealing a reasonable amount of damage
+Clam_Scan ./resources/images/clam_tk_shop.png Clam 150 Clam-scan, even though a community driven service, can stop packages real fast

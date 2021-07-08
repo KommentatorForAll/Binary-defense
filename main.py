@@ -1,6 +1,7 @@
 import os
 
 import arcade
+from arcade.gui import UIManager
 import assets
 from pyglet.gl import GL_NEAREST
 
@@ -32,6 +33,8 @@ class TowerDefenceMap(arcade.View):
 
         self.data = 0
         self._lives = 0
+
+        self.ui_manager = UIManager()
 
         self.setup()
 
@@ -161,7 +164,8 @@ class TowerDefenceMap(arcade.View):
         pass
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.shop.on_mouse_press(x, y, button, modifiers)
+        # self.shop.on_mouse_press(x, y, button, modifiers)
+        pass
 
     def on_mouse_release(self, x, y, button, modifiers):
         self.shop.on_mouse_release(x, y, button, modifiers)

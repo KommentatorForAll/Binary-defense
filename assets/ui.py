@@ -1,4 +1,5 @@
 import arcade
+import arcade.gui
 from typing import List, Dict, Optional, Tuple
 
 import main
@@ -7,15 +8,21 @@ from assets.towers import Tower
 SCALE = 4
 
 
-class ShopItem(arcade.Sprite):
+class ShopItem(arcade.gui.UIImageButton):
 
-    def __init__(self, **kwargs):
-        self.__dict__.update(**kwargs)
-        super().__init__(kwargs["img"], scale=kwargs["scale"] if kwargs.keys().__contains__("scale") else 1)
-        self.tower: Tower = self.tower
-        self.price: int = self.price
-        self.name: str = self.name
-        self.description: str = self.description
+    def __init__(self, name: str, img: str, tower: Tower, price: int, description: str, shop: "Shop", scale: float = 2):
+        super().__init__(arcade.load_texture(img), scale=scale)
+        self.tower: Tower = tower
+        self.price: int = price
+        self.name: str = name
+        self.description: str = description
+        self.shop: "Shop" = shop
+
+    def on_press(self):
+        self.shop.on_press(self)
+
+    def on_hover(self):
+        self.shop.game.info_ui.info_tower = self
 
 
 class Shop:
@@ -24,7 +31,7 @@ class Shop:
                  game: main.TowerDefenceMap,
                  scale: float = 2
                  ):
-        self.towers: List[ShopItem] = [ShopItem(scale=SCALE / 2, **kwargs) for kwargs in tower_infos]
+        self.towers: List[ShopItem] = [ShopItem(scale=SCALE / 2, **kwargs, shop=self) for kwargs in tower_infos]
         self.shop_sprites: Dict[arcade.Sprite, Tower] = {}
         self.sprites: arcade.SpriteList = arcade.SpriteList()
         self.scale: float = scale
@@ -42,8 +49,6 @@ class Shop:
 
         self.hold_object: Optional[Tower] = None
 
-        self.col_checker: arcade.Sprite = arcade.SpriteCircle(4, (255, 0, 0))
-
         self.setup()
 
     def setup(self):
@@ -51,6 +56,7 @@ class Shop:
         total_offset = self.offset[0]
         for spr in self.towers:
             spr.position = (total_offset, self.pos[1])
+            self.game.ui_manager.add_ui_element(spr)
 
             self.sprites.append(spr)
 
@@ -62,25 +68,17 @@ class Shop:
         self.shop_background.draw()
         # arcade.draw_rectangle_filled(self.pos[0], self.pos[1], self.width,
         #                              self.offset[1] * 2, (0, 127, 0))
-        self.sprites.draw(**kwargs)
+        # self.sprites.draw(**kwargs)
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        self.col_checker.position = x, y
-        clicked_sprites = self.col_checker.collides_with_list(self.sprites)
-        if len(clicked_sprites) != 0:
-            print(f"clicked on {clicked_sprites[0]}")
-            obj: ShopItem = clicked_sprites[0]
-            self.game.info_ui.info_tower = obj
-            if obj.price > self.game.data:
-                self.game.info_ui.warn_text = "Not enough data to buy"
-                return
-            self.hold_object = obj.tower.clone()
-            self.cur_price = obj.price
-            self.hold_object.activated = False
-            self.hold_object.selected = True
-            self.game.assets_towers.append(self.hold_object)
-        else:
-            print("didn't click on shop item")
+    def on_press(self, obj: ShopItem):
+        if obj.price > self.game.data:
+            self.game.info_ui.warn_text = "Not enough data to buy"
+            return
+        self.hold_object = obj.tower.clone()
+        self.cur_price = obj.price
+        self.hold_object.activated = False
+        self.hold_object.selected = True
+        self.game.assets_towers.append(self.hold_object)
 
     def on_mouse_release(self, x, y, button, modifiers):
         if self.hold_object is None:
@@ -170,9 +168,9 @@ class InfoUI:
     def draw(self, **kwargs):
         # arcade.draw_rectangle_filled(self.center_pos[0], self.center_pos[1], self.size[0], self.size[1], (0, 0, 128))
         self.background.draw()
-        arcade.draw_point(self.info_box_topleft[0], self.info_box_topleft[1], (255,255,255), 2)
-        arcade.draw_point(self.stats_box_topleft[0], self.stats_box_topleft[1], (255,255,255), 2)
-        arcade.draw_point(self.button_box_topleft[0], self.button_box_topleft[1], (255,255,255), 2)
+        arcade.draw_point(self.info_box_topleft[0], self.info_box_topleft[1], (255, 255, 255), 2)
+        arcade.draw_point(self.stats_box_topleft[0], self.stats_box_topleft[1], (255, 255, 255), 2)
+        arcade.draw_point(self.button_box_topleft[0], self.button_box_topleft[1], (255, 255, 255), 2)
 
         arcade.draw_text(f"Data: {self.game.data}",
                          self.stats_box_topleft[0] + self.default_offset[0],
