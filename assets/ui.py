@@ -104,14 +104,58 @@ class Shop:
             return
         else:
             self.hold_object.position = x, y
-            cols: list = self.hold_object.collides_with_list(self.game.assets_paths)
-            cols.extend(self.hold_object.collides_with_list(self.game.assets_towers))
-            if len(cols) > 0:
+            cols: list = self.hold_object.collides_with_list(self.game.assets_solid)
+            self.hold_object.placeable = len(cols) == 0
+            # if len(cols) > 0:
                 # print("not placeable")
-                self.hold_object.hitbox_color = self.hitbox_color_not_placeable
-            else:
+            #     self.hold_object.hitbox_color = self.hitbox_color_not_placeable
+            # else:
                 # print("placeable")
-                self.hold_object.hitbox_color = self.hitbox_color_placeable
+            #     self.hold_object.hitbox_color = self.hitbox_color_placeable
+
+
+class StartWaveButton(arcade.gui.UIImageButton):
+
+    def __init__(self, game: main.TowerDefenceMap):
+        super().__init__(
+            arcade.load_texture("./resources/images/start_wave_button.png"),
+            arcade.load_texture("./resources/images/start_wave_button_hover.png"),
+            arcade.load_texture("./resources/images/start_wave_button_click.png")
+            )
+        self.game = game
+
+    def on_release(self):
+        # super().on_release()
+        self.game.start_wave()
+
+    def update(self):
+        super().update()
+        self.set_proper_texture()
+
+    def on_wave_finish(self):
+        super().on_release()
+
+
+class SpeedButtons(arcade.gui.UIImageButton):
+
+    def __init__(self, speed: str, game: main.TowerDefenceMap, buttons: List["SpeedButtons"]):
+        super().__init__(
+            arcade.load_texture(f"./resources/images/button_speed_{speed}.png"),
+            arcade.load_texture(f"./resources/images/button_speed_{speed}_hover.png"),
+            arcade.load_texture(f"./resources/images/button_speed_{speed}_active.png"),
+        )
+        self.game = game
+        self.speed: str = speed
+        self.buttons = buttons
+
+    def on_release(self):
+        for button in self.buttons:
+            if button is not self:
+                button.deactivate()
+        self.game.window.set_update_rate(1/eval(f"main.TPS_{self.speed.upper()}"))
+
+    def deactivate(self):
+        super().on_release()
 
 
 class InfoUI:
@@ -131,6 +175,11 @@ class InfoUI:
         self.background.position = self.center_pos
         self.game.add_sprite(self.background, True)
         self.sprites.append(self.background)
+
+        self.sw_button = StartWaveButton(self.game)
+
+        self.speed_buttons: List[SpeedButtons] = []
+
         self._warn_text: str = ""
         self._warn_age = 0
         self._age_warn = False
@@ -157,10 +206,29 @@ class InfoUI:
 
         self.button_box_topleft = self.topleft_pos[0] + self.margin, self.info_box_topleft[1] - 247
 
+        self.sw_button.position = self.middle + 75, self.button_box_topleft[1] - 175
+        self.sprites.append(self.sw_button)
+        self.game.ui_manager.add_ui_element(self.sw_button)
+
+        x = 24
+        i = 1
+        first_button = True
+        for speed in ["normal", "fast", "fastest"]:
+            b = SpeedButtons(speed, self.game, self.speed_buttons)
+            if first_button:
+                b.on_press()
+                first_button = False
+            b.position = self.button_box_topleft[0] + x, self.button_box_topleft[1] - self.default_offset[1]/2
+            self.speed_buttons.append(b)
+            self.game.ui_manager.add_ui_element(b)
+            i += 0.8
+            x += 32*i
+
         # self.sprites.append(self.data_text)
         # self.sprites.append(self.lives_text)
 
     def update(self):
+        self.sw_button.update()
         if self._age_warn:
             self._warn_age += 1
             if self._warn_age > 100:
@@ -185,13 +253,20 @@ class InfoUI:
 
         arcade.draw_text(f"Lives: {self.game.lives}",
                          self.stats_box_topleft[0] + self.default_offset[0],
-                         self.stats_box_topleft[1] - (self.default_offset[1] * 2 + 2 * SCALE),
+                         self.stats_box_topleft[1] - (self.default_offset[1] * 1.7),
                          (255, 255, 255),
                          font_name="./resources/fonts/Welbut",
                          font_size=5 * SCALE,
                          anchor_x="left"
                          )
-
+        arcade.draw_text(f"Wave: {self.game.wave_no}",
+                         self.stats_box_topleft[0] + self.default_offset[0],
+                         self.stats_box_topleft[1] - (self.default_offset[1] * 2.4),
+                         (255, 255, 255),
+                         font_name="./resources/fonts/Welbut",
+                         font_size=5 * SCALE,
+                         anchor_x="left"
+                         )
         arcade.draw_text(self.warn_text,
                          self.info_box_topleft[0] + self.default_offset[0],
                          self.info_box_topleft[1] - (self.default_offset[1] + 175),

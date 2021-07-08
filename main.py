@@ -1,14 +1,18 @@
 import os
+from typing import Dict, Optional
 
 import arcade
 from arcade.gui import UIManager
 import assets
 from pyglet.gl import GL_NEAREST
 
-
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 WINDOW_NAME = "Binary Defence"
+
+TPS_NORMAL = 40
+TPS_FAST = 100
+TPS_FASTEST = 150
 
 
 class TowerDefenceMap(arcade.View):
@@ -17,6 +21,7 @@ class TowerDefenceMap(arcade.View):
         super().__init__()
 
         arcade.set_background_color((0, 0, 0))
+        self.ui_manager = UIManager()
 
         # self.assets_all = arcade.SpriteList()
         self.assets_paths: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
@@ -24,18 +29,22 @@ class TowerDefenceMap(arcade.View):
         self.assets_towers: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
         self.assets_solid: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
-        self.availables_enemies = None
-        self.availables_maps = None
+        self.availables_enemies: Dict[str, assets.enemies.Enemy] = {}
+        self.availables_maps: Dict[str, assets.maps.Map] = {}
+        self.availables_waves = []
 
-        self.map = None
+        self.map: Optional[assets.maps.Map] = None
+        self.wave: Optional[assets.maps.Wave] = None
+        self._wave_active: bool = False
 
         self.shop: assets.ui.Shop = None
         self.info_ui: assets.ui.InfoUI = assets.ui.InfoUI(self)
 
+        self._current_tps = TPS_NORMAL
+
         self.data = 0
         self._lives = 0
-
-        self.ui_manager = UIManager()
+        self.wave_no = 0
 
         self.setup()
 
@@ -51,11 +60,27 @@ class TowerDefenceMap(arcade.View):
 
     lives = property(_get_lives, _set_lives)
 
+    def _get_wave_active(self):
+        return self._wave_active
+
+    def _set_wave_active(self, is_active: bool):
+        self._wave_active = is_active
+        if not is_active:
+            self.info_ui.sw_button.on_wave_finish()
+
+    wave_active = property(_get_wave_active, _set_wave_active)
+
+    def _set_cur_tps(self, tps):
+        self.window.set_update_rate(1 / self._current_tps)
+        self._current_tps = tps
+
+    def _get_cur_tps(self):
+        return self._current_tps
+
+    current_tps = property(_get_cur_tps, _set_cur_tps)
+
     def setup(self):
         # self.assets_all = arcade.SpriteList()
-
-        self.availables_enemies = {}
-        self.availables_maps = {}
 
         self.load_availables()
         print(self.availables_enemies)
@@ -77,10 +102,32 @@ class TowerDefenceMap(arcade.View):
                     drops[e_info[i]] = int(e_info[i + 1])
                     i += 2
             self.availables_enemies[e_info[0]] = assets.enemies.Enemy(int(e_info[2]), int(e_info[3]), int(e_info[4]),
-                                                              f"resources/images/{e_info[1]}", drops,
-                                                              self.availables_enemies, self)
+                                                                      f"resources/images/{e_info[1]}", drops,
+                                                                      self.availables_enemies, self, None)
 
         enemy_file.close()
+
+        # Waves
+        wave_file = open("./resources/infos/waves.txt")
+        waves = wave_file.read().split("\n")
+        for wave in waves:
+            if wave[0] == '#':
+                continue
+            w_info = wave.split(" ")
+            enemies = []
+            for i in range(0, len(w_info), 3):
+                enemies.append(
+                    {
+                        "enemy": self.availables_enemies[w_info[i]],
+                        "delay": int(w_info[i + 1]),
+                        "cnt": int(w_info[i + 2])
+                    }
+                )
+            self.availables_waves.append(enemies)
+
+        wave_file.close()
+
+        print(self.availables_waves)
 
         # Towers
         tower_file = open("resources/infos/towers.txt")
@@ -108,8 +155,8 @@ class TowerDefenceMap(arcade.View):
             #    "./resources/images/clam_tk.png": assets.Clam(self.assets_enemies)
             # },
             (
-                WINDOW_WIDTH/2,
-                WINDOW_HEIGHT-54
+                WINDOW_WIDTH / 2,
+                WINDOW_HEIGHT - 54
             ),
             self
         )
@@ -140,7 +187,7 @@ class TowerDefenceMap(arcade.View):
         self.map = self.availables_maps[map_name]
         self.assets_paths = self.map.map
         self.assets_solid.extend(self.assets_paths)
-        self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_10"]))
+        # self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_10"]))
         # f = assets.Clam(self.assets_enemies)
         # self.assets_towers.append(f)
         # f.center_x = 256
@@ -148,11 +195,27 @@ class TowerDefenceMap(arcade.View):
         self.data = int(self.map.data)
         self.lives = int(self.map.lives)
 
+    def start_wave(self):
+        if self.wave_active:
+            return
+        self.wave = assets.maps.Wave(self.availables_waves[self.wave_no], self.map, self)
+        self.wave_no += 1
+        self.wave_active = True
+
+    def finish_wave(self):
+        self.wave = None
+
     def on_update(self, delta_time: float):
         self.assets_paths.update()
         self.assets_enemies.update()
         self.assets_towers.update()
         self.info_ui.update()
+        if self.wave is not None:
+            self.wave.update()
+        if self.wave_active:
+            if len(self.assets_enemies) == 0:
+                self.wave_active = False
+                self.data += 100
 
     def on_draw(self):
         arcade.start_render()
@@ -160,7 +223,7 @@ class TowerDefenceMap(arcade.View):
         self.assets_paths.draw(filter=GL_NEAREST)
         self.assets_towers.draw(filter=GL_NEAREST)
         for tower in self.assets_towers:
-            tower.draw(filter=GL_NEAREST)
+            tower.draw()
         # self.assets_towers.draw_hit_boxes((255, 0, 0), 2)
         self.assets_enemies.draw(filter=GL_NEAREST)
 
@@ -186,11 +249,11 @@ class GameWindow(arcade.Window):
 
     def __init__(self):
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
-        self.set_update_rate(1/40)
+        self.set_update_rate(1 / TPS_NORMAL)
 
         game_map = TowerDefenceMap()
         self.show_view(game_map)
-        game_map.load_map("0")
+        game_map.load_map("1")
 
 
 def main():

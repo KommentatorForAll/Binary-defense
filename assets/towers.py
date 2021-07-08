@@ -11,6 +11,7 @@ class Tower(arcade.Sprite):
     def __init__(self, dmg: int, cooldown: int, radius: int, sprite: str, enemy_list: arcade.SpriteList):
         super().__init__(sprite, scale=SCALE, hit_box_algorithm='Simple')
         self.dmg: int = dmg
+        self.tick = 0
         self.max_cooldown: int = cooldown
         self.cooldown: int = cooldown
         self.radius: int = radius
@@ -20,9 +21,10 @@ class Tower(arcade.Sprite):
         self.range_detector.position = self.position
         self.activated: bool = True
         self.selected: bool = False
-        self.hitbox_color: arcade.csscolor = arcade.csscolor.RED
+        self.placeable: bool = True
 
     def update(self):
+        self.tick = not self.tick
         self.range_detector.position = self.position
 
         if not self.activated:
@@ -47,8 +49,8 @@ class Tower(arcade.Sprite):
         if self.selected:
             self.range_detector.draw_hit_box((255, 0, 0), 2)
         if not self.activated:
-            # print(self.hitbox_color)
-            self.draw_hit_box(self.hitbox_color, 3)
+            self._hit_box_shape = None
+            self.draw_hit_box(arcade.csscolor.GREEN if self.placeable else arcade.csscolor.RED, 3)
         self.bullets.draw(**kwargs)
 
     def clone(self) -> "Tower":

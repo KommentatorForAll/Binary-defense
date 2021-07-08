@@ -1,0 +1,10 @@
+#[enemy delay cnt]...
+enemy_0 50 20
+enemy_0 30 35
+enemy_0 30 25 enemy_1 30 5
+enemy_0 20 35 enemy_1 20 18
+enemy_0 20 5 enemy_1 20 27
+enemy_0 20 15 enemy_1 25 15 enemy_10 30 4
+enemy_0 20 20 enemy_1 20 20 enemy_10 20 14
+enemy_10 14 30
+enemy_1 15 102
