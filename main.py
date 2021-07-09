@@ -1,10 +1,13 @@
 import os
+import random
 from typing import Dict, Optional
 
 import arcade
+import pyglet
 from arcade.gui import UIManager
-import assets
 from pyglet.gl import GL_NEAREST
+
+import assets
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -30,12 +33,13 @@ class TowerDefenceMap(arcade.View):
         self.assets_solid: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
         self.availables_enemies: Dict[str, assets.enemies.Enemy] = {}
-        self.availables_maps: Dict[str, assets.maps.Map] = {}
         self.availables_waves = []
 
         self.map: Optional[assets.maps.Map] = None
         self.wave: Optional[assets.maps.Wave] = None
         self._wave_active: bool = False
+
+        self.is_activated = False
 
         self.shop: assets.ui.Shop = None
         self.info_ui: assets.ui.InfoUI = assets.ui.InfoUI(self)
@@ -83,7 +87,6 @@ class TowerDefenceMap(arcade.View):
         # self.assets_all = arcade.SpriteList()
 
         self.load_availables()
-        print(self.availables_enemies)
 
     def load_availables(self):
 
@@ -160,19 +163,6 @@ class TowerDefenceMap(arcade.View):
             ),
             self
         )
-        # Maps
-        for filename in os.listdir("resources/maps"):
-            if not filename.endswith(".mapinfo"):
-                continue
-            map_name = filename[:-8]
-            print(map_name)
-            kwargs = {}
-            for info in open(f"./resources/maps/{filename}").read().split("\n"):
-                k, v = info.split("=")
-                kwargs[k] = [int(x) for x in v.split(",")] if v.find(",") != -1 else v
-                # print(kwargs[k])
-            self.availables_maps[map_name] = assets.maps.Map(**kwargs)
-            # self.availables_maps[map_name] = map
 
     def add_sprite(self, spr: arcade.Sprite, solid=False):
         if isinstance(spr, assets.towers.Tower):
@@ -183,8 +173,8 @@ class TowerDefenceMap(arcade.View):
         elif solid:
             self.assets_solid.append(spr)
 
-    def load_map(self, map_name: str):
-        self.map = self.availables_maps[map_name]
+    def load_map(self, map: "assets.maps.Map"):
+        self.map = map
         self.assets_paths = self.map.map
         self.assets_solid.extend(self.assets_paths)
         # self.assets_enemies.append(self.map.spawn(self.availables_enemies["enemy_10"]))
@@ -206,6 +196,8 @@ class TowerDefenceMap(arcade.View):
         self.wave = None
 
     def on_update(self, delta_time: float):
+        if not self.is_activated:
+            return
         self.assets_paths.update()
         self.assets_enemies.update()
         self.assets_towers.update()
@@ -218,12 +210,16 @@ class TowerDefenceMap(arcade.View):
                 self.data += 100
 
     def on_draw(self):
+        if not self.is_activated:
+            return
         arcade.start_render()
 
         self.assets_paths.draw(filter=GL_NEAREST)
+        for path in self.assets_paths:
+            path.draw(filter=GL_NEAREST)
         self.assets_towers.draw(filter=GL_NEAREST)
         for tower in self.assets_towers:
-            tower.draw()
+            tower.draw(filter=GL_NEAREST)
         # self.assets_towers.draw_hit_boxes((255, 0, 0), 2)
         self.assets_enemies.draw(filter=GL_NEAREST)
 
@@ -244,16 +240,138 @@ class TowerDefenceMap(arcade.View):
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.shop.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
+    def on_show_view(self):
+        self.is_activated = True
+
+    def on_hide_view(self):
+        self.is_activated = False
+        self.ui_manager.unregister_handlers()
+
+
+class StartButton(arcade.gui.UIImageButton):
+
+    def __init__(self, name: str, switch_to, window: arcade.Window, **kwargs):
+        super().__init__(
+            arcade.load_texture(f"./resources/images/{name}.png"),
+            arcade.load_texture(f"./resources/images/{name}_hover.png"),
+            arcade.load_texture(f"./resources/images/{name}_press.png"),
+            **kwargs
+        )
+        self.switch_to = switch_to
+        self.window: arcade.Window = window
+
+    def on_click(self):
+        super().on_click()
+        self.window.show_view(self.switch_to(self.window))
+
+
+class MapSelectButton(StartButton):
+
+    def __init__(self, name: str, window: arcade.Window, map: "assets.maps.Map"):
+        super().__init__("button_empty", TowerDefenceMap, window, text=name)
+        self.map = map
+
+    def on_click(self):
+        td = self.switch_to()
+        self.window.show_view(td)
+        td.load_map(self.map)
+
+
+class LoopingSprite(arcade.Sprite):
+
+    def __init__(self, sprite, **kwargs):
+        super().__init__(sprite, **kwargs)
+
+    def update(self):
+        super().update()
+        if self.center_x > WINDOW_WIDTH:
+            self.center_x = 0
+        elif self.center_x < 0:
+            self.center_x = WINDOW_WIDTH
+
+
+class TitleScreen(arcade.View):
+
+    def __init__(self, window: arcade.Window):
+        super().__init__(window)
+        self.ui_manager = UIManager()
+
+        self.sprites = arcade.SpriteList(use_spatial_hash=True)
+
+        self.start_button = StartButton("button_start", LevelSelector, window)
+        self.start_button.position = WINDOW_WIDTH/2, WINDOW_HEIGHT - 450
+        self.sprites.append(self.start_button)
+        self.ui_manager.add_ui_element(self.start_button)
+
+        self.title_sprite = arcade.Sprite("./resources/images/title_full.png", scale=6)
+        self.title_sprite.position = WINDOW_WIDTH/2, WINDOW_HEIGHT - 125
+        self.sprites.append(self.title_sprite)
+
+        self.bg_sprites = arcade.SpriteList()
+
+        for i in range(random.randrange(5, 10)):
+            spr = LoopingSprite(f"./resources/images/enemy_{random.randrange(2)}.png", scale=4)
+            spr.position = random.randrange(WINDOW_WIDTH), random.randrange(WINDOW_HEIGHT)
+            spr.forward(random.randrange(0, 12)-6)
+            self.bg_sprites.append(spr)
+
+    def on_draw(self):
+        arcade.start_render()
+        self.bg_sprites.draw(filter=GL_NEAREST)
+        self.sprites.draw(filter=GL_NEAREST)
+
+    def on_update(self, delta_time: float):
+        self.bg_sprites.update()
+
+    def on_hide_view(self):
+        self.ui_manager.unregister_handlers()
+
+
+class LevelSelector(arcade.View):
+
+    def __init__(self, window: arcade.Window):
+        super().__init__(window)
+
+        self.ui_manager = UIManager()
+
+        self.availables_maps: Dict[str, "assets.maps.Map"] = {}
+
+        # Maps
+        for filename in os.listdir("resources/maps"):
+            if not filename.endswith(".mapinfo"):
+                continue
+            map_name = filename[:-8]
+            print(map_name)
+            kwargs = {}
+            for info in open(f"./resources/maps/{filename}").read().split("\n"):
+                k, v = info.split("=")
+                kwargs[k] = [int(x) for x in v.split(",")] if v.find(",") != -1 else v
+                # print(kwargs[k])
+            self.availables_maps[map_name] = assets.maps.Map(**kwargs)
+
+        x, y = 16, 100
+        for name, map in self.availables_maps.items():
+            spr = MapSelectButton(name, self.window, map)
+            spr.position = x, y
+            self.ui_manager.add_ui_element(spr)
+            x += 16
+
+    def on_draw(self):
+        arcade.start_render()
+
+    def on_hide_view(self):
+        self.ui_manager.unregister_handlers()
+
 
 class GameWindow(arcade.Window):
 
     def __init__(self):
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
         self.set_update_rate(1 / TPS_NORMAL)
-
-        game_map = TowerDefenceMap()
+        self.set_icon(pyglet.image.load("./resources/images/icon.png"))
+        game_map = TitleScreen(self)
         self.show_view(game_map)
-        game_map.load_map("1")
+        # game_map.load_map("1")
 
 
 def main():
@@ -263,3 +381,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

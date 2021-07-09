@@ -1,7 +1,7 @@
-from typing import List, Tuple, Dict
+import random
+from typing import List, Dict
 
 import arcade
-import random
 
 import main
 from assets.enemies import Enemy
@@ -11,16 +11,33 @@ SCALE = 4
 
 class Path(arcade.Sprite):
 
-    def __init__(self, rot: int, sprite: str, pos: tuple, tag: str = None):
-        super().__init__(sprite, scale=SCALE)
+    def __init__(self, rot: int, pos: tuple, tag: str = None):
+        super().__init__("./resources/images/path_bg.png", scale=SCALE)
+        self.fg = arcade.Sprite("./resources/images/path_fg.png", scale=SCALE)
         self.rot = rot
         self.turn_right(rot * 90)
         self.pos = pos
         self.center_x = pos[0] * SCALE * 16 + 32
         self.center_y = pos[1] * SCALE * 16 + 32
+        x_incr = int(rot == 1) - int(rot == 3)
+        y_incr = int(rot == 0) - int(rot == 2)
+        self.fg.position = self.center_x + x_incr * SCALE * 2, self.center_y + y_incr * SCALE * 2
+        self.fg.turn_right(rot*90)
+        self.fgsl = arcade.SpriteList(use_spatial_hash=True)
+        self.fgsl.append(self.fg)
         self.target: tuple = self.set_target()
         self.tag: str = tag
         self.set_target()
+
+    def _get_tag(self):
+        return self._tag
+
+    def _set_tag(self, tag: str):
+        self._tag = tag
+        if tag == 'f' or tag == 's':
+            self.fg.texture = arcade.load_texture("./resources/images/path_fg_arrow.png")
+
+    tag = property(_get_tag, _set_tag)
 
     def set_target(self):
         if self.rot % 2 == 0:
@@ -32,17 +49,20 @@ class Path(arcade.Sprite):
     def update(self):
         pass
 
+    def draw(self, **kwargs):
+        self.fgsl.draw(**kwargs)
+
 
 class Segment:
 
     def __init__(self, direction: int, length: int):
         self.direction = direction
         self.length = length
-        self.x_incr = direction == 1 - (direction == 3)
-        self.y_incr = direction == 0 - (direction == 2)
+        self.x_incr = int(direction == 1) - int(direction == 3)
+        self.y_incr = int(direction == 0) - int(direction == 2)
 
     def __str__(self):
-        return f"Segment: direction {self.direction}; length {self.length}"
+        return f"Segment: direction {self.direction}; length {self.length}; x {self.x_incr}; y {self.y_incr}"
 
 
 class Map:
@@ -63,45 +83,32 @@ class Map:
         map_data = map_file.read().split(";")
         self.start = [int(x) for x in map_data[0].split(",")]
         map_data = map_data[1:]
+        x, y = self.start
+        cnt = 0
+        path = None
         for s in map_data:
-            self.segments.append(Segment(*[int(x) for x in s.split(",")]))
-
-        return map_sprites
-
-    def load_map_old(self, map_filename: str):
-        # print("loading map")
-        map_sprites = arcade.SpriteList(use_spatial_hash=True)
-        map_file = open("./resources/maps/" + map_filename)
-        map_data = map_file.read().split("\n")
-        i = 0
-        map_data.reverse()
-        # print(self.finish)
-        for row in map_data:
-            j = 0
-            for p in row:
-                if p == '#':
-                    pass
-                elif p == '-':
-                    pass
+            info = [int(x) for x in s.split(",")]
+            segment = Segment(*info)
+            print(segment)
+            self.segments.append(segment)
+            for i in range(segment.length):
+                if cnt == 1:
+                    path = Path(info[0], (x, y), 's')
                 else:
-                    rot = int(p)
-                    path = Path(rot, "./resources/images/path.png", (j, i))
-                    # print(j, i)
-                    if (j, i) == self.start:
-                        # self.start_path = path
-                        path.tag = 's'
-                    elif [j, i] == self.finish:
-                        # print("found finish")
-                        path.tag = 'f'
-                    map_sprites.append(path)
-                j += 1
-            i += 1
+                    path = Path(info[0], (x, y))
+                cnt += 1
+                map_sprites.append(path)
+                x += segment.x_incr
+                y += segment.y_incr
+        path.tag = 'f'
+        map_sprites.reverse()
         return map_sprites
 
     def spawn(self, enemy: Enemy) -> Enemy:
         e = enemy.clone()
         e.position = self.start[0] * SCALE * 16, self.start[1] * SCALE * 16 + 32
         e.segment = self.segments[0]
+        e.segment_age = -27
         return e
 
 

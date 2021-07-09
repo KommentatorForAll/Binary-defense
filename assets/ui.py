@@ -200,7 +200,7 @@ class InfoUI:
     warn_text = property(_get_warn_text, _set_warn_text)
 
     def setup(self):
-        self.stats_box_topleft = self.topleft_pos[0] + self.margin, self.topleft_pos[1]
+        self.stats_box_topleft = self.topleft_pos[0] + self.margin, self.topleft_pos[1] + 12
 
         self.info_box_topleft = self.topleft_pos[0] + self.margin, self.topleft_pos[1] - 132
 

@@ -6,7 +6,7 @@ import main
 import assets
 
 SCALE = 4
-ENEMY_SPREAD = 5
+ENEMY_SPREAD = 0
 
 
 class Enemy(arcade.Sprite):
@@ -80,8 +80,6 @@ class Enemy(arcade.Sprite):
 
         super().update()
 
-        return
-
     def take_damage(self, dmg: int):
         self.hp -= dmg
         if self.hp <= 0:
@@ -103,7 +101,7 @@ class Enemy(arcade.Sprite):
                     enemy.paths = self.game.assets_paths
                     enemy.position = self.position
                     enemy.segment = self.segment
-                    enemy.segment_age = self.segment_age + random.randrange(ENEMY_SPREAD)
+                    enemy.segment_age = self.segment_age # + random.randrange(ENEMY_SPREAD)
 
                     self.game.assets_enemies.append(enemy)
 

@@ -8,9 +8,9 @@ SCALE = 4
 
 class Tower(arcade.Sprite):
 
-    def __init__(self, dmg: int, cooldown: int, radius: int, sprite: str, enemy_list: arcade.SpriteList):
+    def __init__(self, dmg: float, cooldown: int, radius: int, sprite: str, enemy_list: arcade.SpriteList):
         super().__init__(sprite, scale=SCALE, hit_box_algorithm='Simple')
-        self.dmg: int = dmg
+        self.dmg: float = dmg
         self.tick = 0
         self.max_cooldown: int = cooldown
         self.cooldown: int = cooldown
@@ -59,12 +59,12 @@ class Tower(arcade.Sprite):
 
 class Bullet(arcade.AnimatedTimeBasedSprite):
 
-    def __init__(self, speed: int, dmg: int, rot: float, sprite: str, origin: Tower, enemy_list: arcade.SpriteList,
+    def __init__(self, speed: int, dmg: float, rot: float, sprite: str, origin: Tower, enemy_list: arcade.SpriteList,
                  pierce: int = 1):
         super().__init__(sprite, scale=SCALE)
         self.turn_right(rot)
         self.forward(speed)
-        self.dmg: int = dmg
+        self.dmg: float = dmg
         self.enemies: arcade.SpriteList = enemy_list
         self.pierce: int = pierce
         self.origin: Tower = origin
@@ -138,6 +138,23 @@ class Clam(Tower):
 
     def clone(self) -> Tower:
         return Clam(self.enemies)
+
+
+class Spinner(Tower):
+
+    def __init__(self, enemy_list: arcade.SpriteList):
+        super().__init__(0.25, 4, 256, "./resources/images/spinner.png", enemy_list)
+        self.__rot = 0
+
+    def shoot(self, enemy: Enemy):
+        self.__rot += 16
+        b = Bullet(10, self.dmg, self.__rot, "./resources/images/trans_heart.png", self, self.enemies)
+        b.position = self.position
+        self.bullets.append(b)
+        super().shoot(enemy)
+
+    def clone(self):
+        return Spinner(self.enemies)
 
 
 def get_angle_pnt(p1, p2) -> float:
