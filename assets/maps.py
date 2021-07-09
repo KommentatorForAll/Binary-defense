@@ -67,13 +67,12 @@ class Segment:
 
 class Map:
 
-    def __init__(self, map_name: str, **kwargs):
+    def __init__(self, map_name: str):
         self.start: tuple = (0, 0)
         self.finish: tuple = (0, 0)
         print("creating map")
-        self.__dict__.update(kwargs)
-        self.data: int = self.data
-        self.lives: int = self.lives
+        self.data: int = 0
+        self.lives: int = 0
         self.segments: List[Segment] = []
         self.map: arcade.SpriteList = self.load_map(map_name)
 
@@ -81,8 +80,10 @@ class Map:
         map_sprites = arcade.SpriteList(use_spatial_hash=True)
         map_file = open(f"./resources/maps/{map_filename}")
         map_data = map_file.read().split(";")
-        self.start = [int(x) for x in map_data[0].split(",")]
-        map_data = map_data[1:]
+        self.lives = int(map_data[0])
+        self.data = int(map_data[1])
+        self.start = [int(x) for x in map_data[3].split(",")]
+        map_data = map_data[4:]
         x, y = self.start
         cnt = 0
         path = None
