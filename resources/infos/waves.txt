@@ -9,7 +9,7 @@ enemy_0 25 20 enemy_1 30 20 enemy_10 50 5
 enemy_0 20 20 enemy_1 20 20 enemy_10 20 14
 enemy_10 25 30
 enemy_1 15 102
-enemy_0 15 6 enemy_1 15 12 enemy_10 20 enemy_1001 30 3
+enemy_0 15 6 enemy_1 15 12 enemy_10 20 20 enemy_1001 30 3
 enemy_1 20 15 enemy_10 20 10 enemy_1001 25 5
 enemy_1 20 50 enemy_10 25 23
 enemy_0 20 49 enemy_1 20 15 enemy_10 20 12 enemy_1001 30 10

@@ -28,7 +28,81 @@ TPS_FASTEST = 150
 # arcade.gui.UIStyle.set_default_style(GUI_STYLE)
 
 
+class StartButton(arcade.gui.UIImageButton):
+
+    def __init__(self, name: str, switch_to, window: arcade.Window, **kwargs):
+        super().__init__(
+            arcade.load_texture(f"./resources/images/{name}.png"),
+            arcade.load_texture(f"./resources/images/{name}_hover.png"),
+            arcade.load_texture(f"./resources/images/{name}_press.png"),
+            **kwargs
+        )
+        self.switch_to = switch_to
+        self.window: arcade.Window = window
+
+    def on_click(self):
+        super().on_click()
+        x = self.switch_to(self.window)
+        self.window.show_view(x)
+        # x.load_map(assets.maps.Map("1.map"))
+
+
+class DeathScreen(arcade.View):
+
+    def __init__(self, wave_no: int):
+        super().__init__()
+
+        self.ui_manager = arcade.gui.UIManager()
+        self.sprites = arcade.SpriteList(use_spatial_hash=True)
+
+        self.wave_no = wave_no
+
+        self.button_return = StartButton("button_big_empty", TitleScreen, self.window, text="Main Menu")
+        self.button_return.position = WINDOW_WIDTH/2, 128
+        self.ui_manager.add_ui_element(self.button_return)
+
+        self.death_text = arcade.Sprite("./resources/images/text_death.png", scale=SCALE * 3)
+        self.death_text.position = WINDOW_WIDTH/2, WINDOW_HEIGHT - 128
+        self.sprites.append(self.death_text)
+
+    def on_draw(self):
+        arcade.start_render()
+        # self.ui_manager.on_draw()
+        self.sprites.draw(filter=GL_NEAREST)
+
+        arcade.draw_text(
+            f"you made it to wave {self.wave_no}",
+            WINDOW_WIDTH/2,
+            256,
+            (255, 0, 0),
+            font_name="./resources/fonts/Welbut",
+            font_size=20,
+            anchor_x="center"
+        )
+
+    def on_hide_view(self):
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
+
+    def on_show_view(self):
+        # self.ui_manager.enable()
+        pass
+
+
 class TowerDefenceMap(arcade.View):
+    """
+    Class that hosts the main game.
+
+    Attributes:
+        :assets_paths: The list of paths, passed by the currently loaded Map
+        :assets_enemies: All enemies, currently in the world
+        :assets_towers: The currently placed towers
+        :asstes_solid: A list of all sprites on which one is unable to place Towers ontop of
+        :availables_enemies: A Dictionary of enemy names and an initial enemy instance
+        :availables_waves: A list of waves, which get spawned when a button is pressed
+        :map: The currently loaded map. Empty if None is loaded
+        :wave: The current Wave. Empty if None is loaded
+    """
 
     def __init__(self):
         super().__init__()
@@ -43,7 +117,7 @@ class TowerDefenceMap(arcade.View):
         self.assets_solid: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
         self.availables_enemies: Dict[str, assets.enemies.Enemy] = {}
-        self.availables_waves = []
+        self.availables_waves: List[assets.maps.Wave] = []
 
         self.map: Optional[assets.maps.Map] = None
         self.wave: Optional[assets.maps.Wave] = None
@@ -62,33 +136,97 @@ class TowerDefenceMap(arcade.View):
 
         self.setup()
 
-    def _get_lives(self):
+    def _get_lives(self) -> int:
+        """
+
+        Returns
+        -------
+        int
+            The current amount of lives
+
+        """
         return self._lives
 
-    def _set_lives(self, amount):
+    def _set_lives(self, amount: int):
+        """
+
+        Parameters
+        ----------
+        amount : int
+            The new amount of lives
+
+        Returns
+        -------
+        None.
+
+        """
         self._lives = amount
         if amount <= 0:
             print("you died")
             print("move to endscreen")
+            ds = DeathScreen(self.wave_no)
+            self.window.show_view(ds)
             return
 
     lives = property(_get_lives, _set_lives)
 
-    def _get_wave_active(self):
+    def _get_wave_active(self) -> bool:
+        """
+
+        Returns
+        -------
+        bool
+            Checks if there is currently an active wave
+
+        """
         return self._wave_active
 
-    def _set_wave_active(self, is_active: bool):
+    def _set_wave_active(self, is_active: bool) -> None:
+        """
+
+        Parameters
+        ----------
+        is_active : bool
+            Activates or deactivates the current wave
+
+        Returns
+        -------
+        None.
+
+        """
         self._wave_active = is_active
         if not is_active:
             self.info_ui.sw_button.on_wave_finish()
 
     wave_active = property(_get_wave_active, _set_wave_active)
 
-    def _set_cur_tps(self, tps):
+    def _set_cur_tps(self, tps: int):
+        """
+
+        Parameters
+        ----------
+        tps : int
+            Sets the games tps (ticks per second)
+
+        Returns
+        -------
+        None.
+
+        """
+
         self.window.set_update_rate(1 / self._current_tps)
         self._current_tps = tps
 
-    def _get_cur_tps(self):
+    def _get_cur_tps(self) -> int:
+        """
+
+
+        Returns
+        -------
+        int
+            The current tps of the game
+
+        """
         return self._current_tps
 
     current_tps = property(_get_cur_tps, _set_cur_tps)
@@ -99,6 +237,14 @@ class TowerDefenceMap(arcade.View):
         self.load_availables()
 
     def load_availables(self):
+        """
+            Loads all available reources
+
+        Returns
+        -------
+        None.
+
+        """
 
         # Enemies
         enemy_file = open("resources/infos/enemies.txt")
@@ -174,7 +320,22 @@ class TowerDefenceMap(arcade.View):
             self
         )
 
-    def add_sprite(self, spr: arcade.Sprite, solid=False):
+    def add_sprite(self, spr: arcade.Sprite, solid: bool = False):
+        """
+
+
+        Parameters
+        ----------
+        spr : arcade.Sprite
+            The spride to add
+        solid : bool, optional
+            If one is able to place towers on top(automatic for towers, enemies and paths). The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
         if isinstance(spr, assets.towers.Tower):
             self.assets_towers.append(spr)
             self.assets_solid.append(spr)
@@ -184,6 +345,19 @@ class TowerDefenceMap(arcade.View):
             self.assets_solid.append(spr)
 
     def load_map(self, map: "assets.maps.Map"):
+        """
+        Loads in a new map.
+
+        Parameters
+        ----------
+        map : assets.maps.Map
+            The map to load.
+
+        Returns
+        -------
+        None.
+
+        """
         self.map = map
         self.assets_paths = self.map.map
         self.assets_solid.extend(self.assets_paths)
@@ -196,6 +370,14 @@ class TowerDefenceMap(arcade.View):
         self.lives = int(self.map.lives)
 
     def start_wave(self):
+        """
+        Starts a wave
+
+        Returns
+        -------
+        None.
+
+        """
         if self.wave_active:
             return
         self.wave = assets.maps.Wave(self.availables_waves[self.wave_no], self.map, self)
@@ -258,25 +440,6 @@ class TowerDefenceMap(arcade.View):
         self.is_activated = False
         self.ui_manager.unregister_handlers()
         # self.ui_manager.disable()
-
-
-class StartButton(arcade.gui.UIImageButton):
-
-    def __init__(self, name: str, switch_to, window: arcade.Window, **kwargs):
-        super().__init__(
-            arcade.load_texture(f"./resources/images/{name}.png"),
-            arcade.load_texture(f"./resources/images/{name}_hover.png"),
-            arcade.load_texture(f"./resources/images/{name}_press.png"),
-            **kwargs
-        )
-        self.switch_to = switch_to
-        self.window: arcade.Window = window
-
-    def on_click(self):
-        super().on_click()
-        x = self.switch_to(self.window)
-        self.window.show_view(x)
-        # x.load_map(assets.maps.Map("1.map"))
 
 
 class LoopingSprite(arcade.Sprite):
@@ -375,6 +538,14 @@ class LevelSelector(arcade.View):
         self.button_load_map.position = 128, 64
         self.ui_manager.add_ui_element(self.button_load_map)
 
+        self.bg_sprites = arcade.SpriteList()
+
+        for i in range(random.randrange(5, 10)):
+            spr = LoopingSprite(f"./resources/images/enemy_{random.randrange(2)}.png", scale=4)
+            spr.position = random.randrange(WINDOW_WIDTH), random.randrange(WINDOW_HEIGHT)
+            spr.forward(random.randrange(0, 12) - 6)
+            self.bg_sprites.append(spr)
+
         # Maps
         for filename in os.listdir("resources/maps"):
             if not filename.endswith(".map"):
@@ -394,8 +565,12 @@ class LevelSelector(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        self.bg_sprites.draw(filter=GL_NEAREST)
         # self.ui_manager.on_draw()
         self.sprites.draw(filter=GL_NEAREST)
+
+    def on_update(self, delta_time: float):
+        self.bg_sprites.update()
 
     def on_hide_view(self):
         self.ui_manager.unregister_handlers()
