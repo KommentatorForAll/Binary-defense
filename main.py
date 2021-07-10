@@ -8,7 +8,7 @@ from arcade.gui import UIManager
 from pyglet.gl import GL_NEAREST
 
 import assets
-from map_creator import MapCreator
+from map_creator import MapCreator, LoadMapButton
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
@@ -354,6 +354,8 @@ class LevelSelector(arcade.View):
 
         self.ui_manager = UIManager(self.window, attatch_callbacks=False)
 
+        self.sprites = arcade.SpriteList(use_spatial_hash=True)
+
         self.button_back = StartButton("button_big_empty", TitleScreen, window, text="Back",
                                        font="./resources/fonts/Welbut")
         self.button_back.position = WINDOW_WIDTH / 2, 64
@@ -364,6 +366,14 @@ class LevelSelector(arcade.View):
         self.ui_manager.add_ui_element(self.button_creator)
 
         self.availables_maps: List[str] = []
+
+        self.text_levels = arcade.Sprite("./resources/images/text_levels.png", scale=SCALE * 2)
+        self.text_levels.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT - 128
+        self.sprites.append(self.text_levels)
+
+        self.button_load_map = LoadMapButton(self, self.window)
+        self.button_load_map.position = 128, 64
+        self.ui_manager.add_ui_element(self.button_load_map)
 
         # Maps
         for filename in os.listdir("resources/maps"):
@@ -378,10 +388,14 @@ class LevelSelector(arcade.View):
             spr.position = x, y
             self.ui_manager.add_ui_element(spr)
             x += 128
+            if x > WINDOW_WIDTH - 128:
+                x = 128
+                y += 128
 
     def on_draw(self):
         arcade.start_render()
         # self.ui_manager.on_draw()
+        self.sprites.draw(filter=GL_NEAREST)
 
     def on_hide_view(self):
         self.ui_manager.unregister_handlers()

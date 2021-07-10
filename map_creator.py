@@ -6,6 +6,8 @@ import numpy as np
 from pyglet.gl import GL_NEAREST
 from tkinter import filedialog
 import os
+from pathlib import Path
+import traceback
 
 import assets
 import main
@@ -15,7 +17,8 @@ WINDOW_HEIGHT = 720
 SCALE = 4
 
 HOME_DIR = os.path.expanduser("~")
-
+MAP_DIR = f"{HOME_DIR}/Documents/BinaryDefence"
+Path(MAP_DIR).mkdir(parents=True, exist_ok=True)
 
 # GUI_STYLE = arcade.gui.UIStyle()
 
@@ -119,7 +122,7 @@ class MapCreator(arcade.View):
         else:
             direction = 0 if dy > 0 else 2
 
-        self.segments.append(assets.maps.Segment(direction, d))
+        self.segments.append(assets.maps.Segment(direction, abs(d)))
 
         for i in range(abs(d)):
             self.assets_paths.append(
@@ -205,21 +208,22 @@ class MapSaver(arcade.View):
             return
         try:
             file_name = filedialog.asksaveasfilename(
-                initialdir=f"{HOME_DIR}/Documents/BinaryDefence",
+                initialdir=MAP_DIR,
                 filetypes=(("Binary defence maps", "*.map"), ("All Files", "*.*")),
                 defaultextension=".map",
                 title="Save Map",
                 initialfile=f"{self.name}.map"
             )
+            self.map_creator.segments[:-2].length += 1
             file = open(file_name, "w")
-            start_point = ','.join(self.map_creator.start_point)
-            segment_str = ';'.join(self.map_creator.segements)
+            start_point = ','.join([str(x) for x in self.map_creator.start_point])
+            segment_str = ';'.join([str(x) for x in self.map_creator.segments[:-1]])
             file.write(
-                f"{self.lives};{self.data};{start_point};{segment_str}"
+                f"{self.amount_lives};{self.amount_data};{start_point};{segment_str}"
             )
-        except Exception as e:
+        except Exception:
             print("Error while saving file")
-            print(e)
+            traceback.print_exc()
             return
 
         self.window.show_view(main.LevelSelector(self.window))
@@ -257,3 +261,23 @@ class MapSaver(arcade.View):
     def on_show_view(self):
         # self.ui_manager.enable()
         pass
+
+
+class LoadMapButton(StartButton):
+
+    def __init__(self, level_selector: "main.LevelSelector", window: arcade.Window):
+        super().__init__("button_big_empty", None, window, text="Load Map")
+        self.level_selector = level_selector
+
+    def on_press(self):
+        filename = filedialog.askopenfilename(
+            initialdir=MAP_DIR,
+            filetypes=(("Binary defence maps", "*.map"), ("All Files", "*.*")),
+        )
+        try:
+            td = main.TowerDefenceMap()
+            td.load_map(assets.maps.Map(filename, False))
+            self.window.show_view(td)
+        except Exception as e:
+            print("error loading map")
+            print(e)

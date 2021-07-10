@@ -63,25 +63,25 @@ class Segment:
 
     def __str__(self):
         return f"{self.direction},{self.length}"
-    
+
     def print(self):
         print(f"Segment: direction {self.direction}; length {self.length}; x {self.x_incr}; y {self.y_incr}")
-    
+
 
 class Map:
 
-    def __init__(self, map_name: str):
+    def __init__(self, map_name: str, local_map=True):
         self.start: tuple = (0, 0)
         self.finish: tuple = (0, 0)
         print("creating map")
         self.data: int = 0
         self.lives: int = 0
         self.segments: List[Segment] = []
-        self.map: arcade.SpriteList = self.load_map(map_name)
+        self.map: arcade.SpriteList = self.load_map(map_name, local_map)
 
-    def load_map(self, map_filename: str):
+    def load_map(self, map_filename: str, local_map=True):
         map_sprites = arcade.SpriteList(use_spatial_hash=True)
-        map_file = open(f"./resources/maps/{map_filename}")
+        map_file = open(f"./resources/maps/{map_filename}" if local_map else map_filename)
         map_data = map_file.read().split(";")
         self.lives = int(map_data[0])
         self.data = int(map_data[1])
