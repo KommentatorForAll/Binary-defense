@@ -21,13 +21,20 @@ TPS_FAST = 100
 TPS_FASTEST = 150
 
 
+# GUI_STYLE = arcade.gui.UIStyle(
+#     font="./resources/fonts/Welbut",
+#     color=arcade.color.WHITE
+# )
+# arcade.gui.UIStyle.set_default_style(GUI_STYLE)
+
+
 class TowerDefenceMap(arcade.View):
 
     def __init__(self):
         super().__init__()
 
         arcade.set_background_color((0, 0, 0))
-        self.ui_manager = UIManager()
+        self.ui_manager = UIManager(self.window, attatch_callbacks=False)
 
         # self.assets_all = arcade.SpriteList()
         self.assets_paths: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
@@ -216,7 +223,6 @@ class TowerDefenceMap(arcade.View):
         if not self.is_activated:
             return
         arcade.start_render()
-
         self.assets_paths.draw(filter=GL_NEAREST)
         for path in self.assets_paths:
             path.draw(filter=GL_NEAREST)
@@ -229,6 +235,7 @@ class TowerDefenceMap(arcade.View):
         self.info_ui.draw(filter=GL_NEAREST)
 
         self.shop.draw(filter=GL_NEAREST)
+        # self.ui_manager.on_draw()
 
     def update(self, delta_time):
         pass
@@ -245,12 +252,12 @@ class TowerDefenceMap(arcade.View):
 
     def on_show_view(self):
         self.is_activated = True
-        self.ui_manager.enable()
+        # self.ui_manager.enable()
 
     def on_hide_view(self):
         self.is_activated = False
-        # self.ui_manager.unregister_handlers()
-        self.ui_manager.disable()
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
 
 
 class StartButton(arcade.gui.UIImageButton):
@@ -267,7 +274,9 @@ class StartButton(arcade.gui.UIImageButton):
 
     def on_click(self):
         super().on_click()
-        self.window.show_view(self.switch_to(self.window))
+        x = self.switch_to(self.window)
+        self.window.show_view(x)
+        # x.load_map(assets.maps.Map("1.map"))
 
 
 class LoopingSprite(arcade.Sprite):
@@ -287,7 +296,7 @@ class TitleScreen(arcade.View):
 
     def __init__(self, window: arcade.Window):
         super().__init__(window)
-        self.ui_manager = UIManager()
+        self.ui_manager = UIManager(self.window, attatch_callbacks=False)
 
         self.sprites = arcade.SpriteList(use_spatial_hash=True)
 
@@ -312,16 +321,17 @@ class TitleScreen(arcade.View):
         arcade.start_render()
         self.bg_sprites.draw(filter=GL_NEAREST)
         self.sprites.draw(filter=GL_NEAREST)
+        # self.ui_manager.on_draw()
 
     def on_update(self, delta_time: float):
         self.bg_sprites.update()
 
     def on_hide_view(self):
-        # self.ui_manager.unregister_handlers()
-        self.ui_manager.disable()
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
 
     def on_show_view(self):
-        self.ui_manager.enable()
+        # self.ui_manager.enable()
         pass
 
 
@@ -342,7 +352,7 @@ class LevelSelector(arcade.View):
     def __init__(self, window: arcade.Window):
         super().__init__(window)
 
-        self.ui_manager = UIManager()
+        self.ui_manager = UIManager(self.window, attatch_callbacks=False)
 
         self.button_back = StartButton("button_big_empty", TitleScreen, window, text="Back",
                                        font="./resources/fonts/Welbut")
@@ -371,13 +381,14 @@ class LevelSelector(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        # self.ui_manager.on_draw()
 
     def on_hide_view(self):
-        # self.ui_manager.unregister_handlers()
-        self.ui_manager.disable()
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
 
     def on_show_view(self):
-        self.ui_manager.enable()
+        # self.ui_manager.enable()
         pass
 
 

@@ -62,8 +62,11 @@ class Segment:
         self.y_incr = int(direction == 0) - int(direction == 2)
 
     def __str__(self):
-        return f"Segment: direction {self.direction}; length {self.length}; x {self.x_incr}; y {self.y_incr}"
-
+        return f"{self.direction},{self.length}"
+    
+    def print(self):
+        print(f"Segment: direction {self.direction}; length {self.length}; x {self.x_incr}; y {self.y_incr}")
+    
 
 class Map:
 
@@ -82,8 +85,10 @@ class Map:
         map_data = map_file.read().split(";")
         self.lives = int(map_data[0])
         self.data = int(map_data[1])
-        self.start = [int(x) for x in map_data[3].split(",")]
-        map_data = map_data[4:]
+        self.start = [int(x) for x in map_data[2].split(",")]
+        print(map_data)
+        map_data = map_data[3:]
+        print(map_data)
         x, y = self.start
         cnt = 0
         path = None

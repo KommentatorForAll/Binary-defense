@@ -4,12 +4,17 @@ import arcade
 import arcade.gui
 import numpy as np
 from pyglet.gl import GL_NEAREST
+from tkinter import filedialog
+import os
 
 import assets
+import main
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
 SCALE = 4
+
+HOME_DIR = os.path.expanduser("~")
 
 
 # GUI_STYLE = arcade.gui.UIStyle()
@@ -29,7 +34,8 @@ class StartButton(arcade.gui.UIImageButton):
 
     def on_click(self):
         super().on_click()
-        self.window.show_view(self.switch_to(self.window))
+        if self.switch_to is not None:
+            self.window.show_view(self.switch_to(self.window))
 
 
 class SaveMapButton(StartButton):
@@ -57,7 +63,7 @@ class MapCreator(arcade.View):
         self.segments: List["assets.maps.Segment"] = []
         self.assets_paths: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
-        self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager = arcade.gui.UIManager(self.window, attatch_callbacks=False)
 
         self.save_button = SaveMapButton(self.window, self)
         self.save_button.position = WINDOW_WIDTH - 128, 64
@@ -65,6 +71,7 @@ class MapCreator(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        self.ui_manager.on_draw()
         self.assets_paths.draw(filter=GL_NEAREST)
         for path in self.assets_paths:
             path.draw(filter=GL_NEAREST)
@@ -78,11 +85,11 @@ class MapCreator(arcade.View):
                              )
 
     def on_hide_view(self):
-        # self.ui_manager.unregister_handlers()
-        self.ui_manager.disable()
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
 
     def on_show_view(self):
-        self.ui_manager.enable()
+        # self.ui_manager.enable()
         pass
 
     def on_update(self, delta_time: float):
@@ -99,7 +106,7 @@ class MapCreator(arcade.View):
         dx, dy = r_pnt[0] - self.current_start_point[0], r_pnt[1] - self.current_start_point[1]
         is_horizontal = abs(dx) >= abs(dy)
         r_pnt = r_pnt[0] if is_horizontal else self.current_start_point[0], \
-                r_pnt[1] if not is_horizontal else self.current_start_point[1]
+            r_pnt[1] if not is_horizontal else self.current_start_point[1]
         dx = dx * is_horizontal
         dy = dy * (not is_horizontal)
         d = dx + dy
@@ -136,9 +143,20 @@ class MapCreator(arcade.View):
         dx, dy = [sum((a, -b)) for a, b in zip(r_pnt, self.current_start_point)]
         is_horizontal = abs(dx) >= abs(dy)
         r_pnt = r_pnt[0] if is_horizontal else self.current_start_point[0], \
-                r_pnt[1] if not is_horizontal else self.current_start_point[1]
+            r_pnt[1] if not is_horizontal else self.current_start_point[1]
 
         self.mouse_pos = r_pnt
+
+
+class WriteMapButton(StartButton):
+
+    def __init__(self, window: arcade.Window, map_saver: "MapSaver"):
+        super().__init__("button_big_empty", None, window, text="Save Map")
+        self.map_saver = map_saver
+
+    def on_click(self):
+        super().on_click()
+        self.map_saver.save()
 
 
 class MapSaver(arcade.View):
@@ -146,9 +164,9 @@ class MapSaver(arcade.View):
     def __init__(self, map_creator: MapCreator, window: arcade.Window):
         super().__init__(window)
         self.map_creator = map_creator
-        self.ui_manager = arcade.gui.UIManager()
+        self.ui_manager = arcade.gui.UIManager(self.window, attatch_callbacks=False)
 
-        self.map_name_tf = arcade.gui.UIInputBox(width=256)
+        self.map_name_tf = arcade.gui.UIInputBox(width=256, text="my_map")
         self.map_name_tf.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT - 128
         self.ui_manager.add_ui_element(self.map_name_tf)
 
@@ -172,13 +190,70 @@ class MapSaver(arcade.View):
         self.amount_data_lb.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT - 320
         self.ui_manager.add_ui_element(self.amount_data_lb)
 
+        self.write_map_button = WriteMapButton(self.window, self)
+        self.write_map_button.position = WINDOW_WIDTH / 2, 128
+        self.ui_manager.add_ui_element(self.write_map_button)
+
+        self.amount_data = 0
+        self.amount_lives = 0
+        self.name = ""
+
+        self.warning = ""
+
+    def save(self):
+        if not self.check_data():
+            return
+        try:
+            file_name = filedialog.asksaveasfilename(
+                initialdir=f"{HOME_DIR}/Documents/BinaryDefence",
+                filetypes=(("Binary defence maps", "*.map"), ("All Files", "*.*")),
+                defaultextension=".map",
+                title="Save Map",
+                initialfile=f"{self.name}.map"
+            )
+            file = open(file_name, "w")
+            start_point = ','.join(self.map_creator.start_point)
+            segment_str = ';'.join(self.map_creator.segements)
+            file.write(
+                f"{self.lives};{self.data};{start_point};{segment_str}"
+            )
+        except Exception as e:
+            print("Error while saving file")
+            print(e)
+            return
+
+        self.window.show_view(main.LevelSelector(self.window))
+
+    def check_data(self):
+        try:
+            self.amount_data = int(self.amount_data_tf.text)
+            self.amount_lives = int(self.amount_lives_tf.text)
+            self.name = self.map_name_tf.text
+        except ValueError:
+            self.warning = "data and lives must be numbers"
+            return False
+        if len(self.name) == 0:
+            self.warning = "name must not be empty"
+            return False
+        return True
+
     def on_draw(self):
         arcade.start_render()
+        self.ui_manager.on_draw()
+        arcade.draw_text(
+            self.warning,
+            WINDOW_WIDTH/2,
+            192,
+            (255, 0, 0),
+            font_size=20,
+            font_name="./resources/fonts/Welbut",
+            anchor_x="center"
+        )
 
     def on_hide_view(self):
-        # self.ui_manager.unregister_handlers()
-        self.ui_manager.disable()
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
 
     def on_show_view(self):
-        self.ui_manager.enable()
+        # self.ui_manager.enable()
         pass
