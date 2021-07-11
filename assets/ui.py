@@ -225,7 +225,7 @@ class InfoUI:
 
         self.pause_button.position = self.middle - 75, self.button_box_topleft[1] - 175
         self.sprites.append(self.pause_button)
-        # self.game.ui_manager.add_ui_element(self.pause_button)
+        self.game.ui_manager.add_ui_element(self.pause_button)
 
         x = 24
         i = 1

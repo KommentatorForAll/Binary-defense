@@ -188,6 +188,7 @@ class TowerDefenseMap(arcade.View):
         self._wave_active: bool = False
 
         self.is_activated: bool = True
+        self.activate = False
 
         self.shop: assets.ui.Shop = None
         self.info_ui: assets.ui.InfoUI = assets.ui.InfoUI(self)
@@ -452,6 +453,9 @@ class TowerDefenseMap(arcade.View):
         self.wave = None
 
     def on_update(self, delta_time: float):
+        if self.activate and not self.is_activated:
+            self.ui_manager.register_handlers()
+            self.activate = False
         if not self.is_activated:
             return
         self.assets_paths.update()
@@ -481,7 +485,7 @@ class TowerDefenseMap(arcade.View):
         self.info_ui.draw(filter=GL_NEAREST)
 
         self.shop.draw(filter=GL_NEAREST)
-        # self.ui_manager.on_draw()
+        self.ui_manager.on_draw()
 
     def on_key_press(self, symbol, modifiers):
         if symbol == arcade.key.ESCAPE:
@@ -491,20 +495,24 @@ class TowerDefenseMap(arcade.View):
         pass
 
     def on_mouse_press(self, x, y, button, modifiers):
+        self.ui_manager.on_mouse_press(x, y, button, modifiers)
         # self.shop.on_mouse_press(x, y, button, modifiers)
         pass
 
     def on_mouse_release(self, x, y, button, modifiers):
+        self.ui_manager.on_mouse_release(x, y, button, modifiers)
         self.shop.on_mouse_release(x, y, button, modifiers)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.shop.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
     def on_show_view(self):
+        print(self.window._view)
         # if not self.is_activated:
         print("regisadfasdfas")
-        self.ui_manager.register_handlers()
+        # self.ui_manager.register_handlers()
         self.is_activated = True
+        self.activate = True
         # self.ui_manager.enable()
 
     def on_hide_view(self):
@@ -512,6 +520,9 @@ class TowerDefenseMap(arcade.View):
         print("purging")
         self.ui_manager.unregister_handlers()
         # self.ui_manager.disable()
+
+    def __str__(self):
+        print("TowerDefenseMap")
 
 
 class LoopingSprite(arcade.Sprite):
