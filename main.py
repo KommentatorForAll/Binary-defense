@@ -12,7 +12,7 @@ from map_creator import MapCreator, LoadMapButton
 
 WINDOW_WIDTH = 1280
 WINDOW_HEIGHT = 720
-WINDOW_NAME = "Binary Defence"
+WINDOW_NAME = "Binary Defense"
 
 SCALE = 4
 
@@ -108,7 +108,7 @@ class QuitButton(StartButton):
 
 class EscapeScreen(arcade.View):
 
-    def __init__(self, tdm: "TowerDefenceMap"):
+    def __init__(self, tdm: "TowerDefenseMap"):
         super().__init__()
         self.tdm = tdm
 
@@ -149,7 +149,7 @@ class EscapeScreen(arcade.View):
         pass
 
 
-class TowerDefenceMap(arcade.View):
+class TowerDefenseMap(arcade.View):
     """
     Class that hosts the main game.
 
@@ -497,7 +497,7 @@ class TowerDefenceMap(arcade.View):
         self.shop.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
     def on_show_view(self):
-        #if not self.is_activated:
+        # if not self.is_activated:
         print("regisadfasdfas")
         self.ui_manager.register_handlers()
         self.is_activated = True
@@ -568,7 +568,7 @@ class TitleScreen(arcade.View):
 class MapSelectButton(StartButton):
 
     def __init__(self, name: str, window: arcade.Window, map_name: str, **kwargs):
-        super().__init__("button_empty", TowerDefenceMap, window, text=name, **kwargs)
+        super().__init__("button_empty", TowerDefenseMap, window, text=name, **kwargs)
         self.map = map_name
 
     def on_click(self):

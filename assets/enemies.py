@@ -12,7 +12,7 @@ ENEMY_SPREAD = 0
 class Enemy(arcade.Sprite):
 
     def __init__(self, hp: int, speed: int, dmg: int, sprite: str, drops: dict,
-                 enemy_names: Dict[str, "Enemy"], game: main.TowerDefenceMap, segment):
+                 enemy_names: Dict[str, "Enemy"], game: main.TowerDefenseMap, segment):
         super().__init__(sprite, scale=SCALE)
         self.sprite = sprite
         self.hp = hp

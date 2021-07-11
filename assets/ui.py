@@ -28,7 +28,7 @@ class ShopItem(arcade.gui.UIImageButton):
 class Shop:
 
     def __init__(self, tower_infos: List[Dict[str, any]], pos: tuple,
-                 game: main.TowerDefenceMap,
+                 game: main.TowerDefenseMap,
                  scale: float = 2
                  ):
         self.towers: List[ShopItem] = [ShopItem(scale=SCALE / 2, **kwargs, shop=self) for kwargs in tower_infos]
@@ -117,7 +117,7 @@ class Shop:
 
 class StartWaveButton(arcade.gui.UIImageButton):
 
-    def __init__(self, game: main.TowerDefenceMap):
+    def __init__(self, game: main.TowerDefenseMap):
         super().__init__(
             arcade.load_texture("./resources/images/start_wave_button.png"),
             arcade.load_texture("./resources/images/start_wave_button_hover.png"),
@@ -139,7 +139,7 @@ class StartWaveButton(arcade.gui.UIImageButton):
 
 class SpeedButtons(arcade.gui.UIImageButton):
 
-    def __init__(self, speed: str, game: main.TowerDefenceMap, buttons: List["SpeedButtons"]):
+    def __init__(self, speed: str, game: main.TowerDefenseMap, buttons: List["SpeedButtons"]):
         super().__init__(
             arcade.load_texture(f"./resources/images/button_speed_{speed}.png"),
             arcade.load_texture(f"./resources/images/button_speed_{speed}_hover.png"),
@@ -161,7 +161,7 @@ class SpeedButtons(arcade.gui.UIImageButton):
 
 class EscapeButton(main.StartButton):
 
-    def __init__(self, window: arcade.Window, tdm: main.TowerDefenceMap):
+    def __init__(self, window: arcade.Window, tdm: main.TowerDefenseMap):
         super().__init__("button_pause", None, window)
         self.tdm = tdm
 
@@ -171,7 +171,7 @@ class EscapeButton(main.StartButton):
 
 class InfoUI:
 
-    def __init__(self, game: main.TowerDefenceMap):
+    def __init__(self, game: main.TowerDefenseMap):
         self.game = game
         self.size = (256, main.WINDOW_HEIGHT)
         self.topleft_pos = (main.WINDOW_WIDTH - self.size[0], main.WINDOW_HEIGHT - 118)

@@ -121,11 +121,11 @@ class Map:
 
 class Wave:
 
-    def __init__(self, enemies: List[Dict[str, any]], game_map: Map, game: main.TowerDefenceMap):
+    def __init__(self, enemies: List[Dict[str, any]], game_map: Map, game: main.TowerDefenseMap):
         self.cnt: int = 0
         self.delay: int = 0
         self.game_map: Map = game_map
-        self.game: main.TowerDefenceMap = game
+        self.game: main.TowerDefenseMap = game
         self.enemies = enemies
         self.e_ind = random.randrange(len(enemies))
 

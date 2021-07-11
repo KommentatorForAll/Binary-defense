@@ -17,7 +17,7 @@ WINDOW_HEIGHT = 720
 SCALE = 4
 
 HOME_DIR = os.path.expanduser("~")
-MAP_DIR = f"{HOME_DIR}/Documents/BinaryDefence"
+MAP_DIR = f"{HOME_DIR}/Documents/Binarydefense"
 Path(MAP_DIR).mkdir(parents=True, exist_ok=True)
 
 # GUI_STYLE = arcade.gui.UIStyle()
@@ -242,7 +242,7 @@ class MapSaver(arcade.View):
         try:
             file_name = filedialog.asksaveasfilename(
                 initialdir=MAP_DIR,
-                filetypes=(("Binary defence maps", "*.map"), ("All Files", "*.*")),
+                filetypes=(("Binary defense maps", "*.map"), ("All Files", "*.*")),
                 defaultextension=".map",
                 title="Save Map",
                 initialfile=f"{self.name}.map"
@@ -305,10 +305,10 @@ class LoadMapButton(StartButton):
     def on_press(self):
         filename = filedialog.askopenfilename(
             initialdir=MAP_DIR,
-            filetypes=(("Binary defence maps", "*.map"), ("All Files", "*.*")),
+            filetypes=(("Binary defense maps", "*.map"), ("All Files", "*.*")),
         )
         try:
-            td = main.TowerDefenceMap()
+            td = main.TowerDefenseMap()
             td.load_map(assets.maps.Map(filename, False))
             self.window.show_view(td)
         except Exception as e:
