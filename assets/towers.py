@@ -1,5 +1,6 @@
 import arcade
 import numpy as np
+from typing import Optional, Union
 
 from assets.enemies import Enemy
 
@@ -8,7 +9,14 @@ SCALE = 4
 
 class Tower(arcade.Sprite):
 
-    def __init__(self, dmg: float, cooldown: int, radius: int, sprite: str, enemy_list: arcade.SpriteList):
+    def __init__(self,
+                 dmg: float,
+                 cooldown: int,
+                 radius: int,
+                 sprite: str,
+                 enemy_list: arcade.SpriteList,
+                 sound: Union[str, arcade.Sound] = None
+                 ):
         super().__init__(sprite, scale=SCALE, hit_box_algorithm='Simple')
         self.dmg: float = dmg
         self.tick = 0
@@ -22,6 +30,12 @@ class Tower(arcade.Sprite):
         self.activated: bool = True
         self.selected: bool = False
         self.placeable: bool = True
+        self.sound: Optional[arcade.Sound] = None
+        if sound is not None:
+            if isinstance(sound, arcade.Sound):
+                self.sound = sound
+            else:
+                self.sound = arcade.load_sound(sound)
 
     def update(self):
         self.tick = not self.tick
@@ -41,6 +55,8 @@ class Tower(arcade.Sprite):
 
     def shoot(self, enemy: Enemy):
         self.cooldown = self.max_cooldown
+        if self.sound is not None:
+            arcade.play_sound(self.sound)
 
     def kill(self):
         super().kill()
@@ -95,7 +111,7 @@ class Bullet(arcade.AnimatedTimeBasedSprite):
 class Firewall(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(1, 100, 256, "./resources/images/firewall.png", enemy_list)
+        super().__init__(1, 100, 256, "./resources/images/firewall.png", enemy_list, "./resources/sounds/fire_ball.mp3")
 
     def shoot(self, enemy: Enemy):
         super().shoot(enemy)
@@ -111,7 +127,7 @@ class Firewall(Tower):
 class Proxy(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(2, 100, 256, "./resources/images/proxy.png", enemy_list)
+        super().__init__(2, 100, 256, "./resources/images/proxy.png", enemy_list, "./resources/sounds/fire_ball.mp3")
 
     def shoot(self, enemy: Enemy):
         angle = get_angle_pnt(self.position, enemy.position)
@@ -127,7 +143,7 @@ class Proxy(Tower):
 class Clam(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(2, 150, 400, "./resources/images/clam_tk.png", enemy_list)
+        super().__init__(2, 150, 400, "./resources/images/clam_tk.png", enemy_list, "./resources/sounds/laser.mp3")
 
     def shoot(self, enemy: Enemy):
         angle = get_angle_pnt(self.position, enemy.position)
@@ -143,15 +159,24 @@ class Clam(Tower):
 class Spinner(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(0.25, 4, 256, "./resources/images/spinner.png", enemy_list)
+        super().__init__(0.25, 8, 256, "./resources/images/spinner.png", enemy_list, "./resources/sounds/nya.mp3")
         self.__rot = 0
+        self.does_trigger = 0
 
     def shoot(self, enemy: Enemy):
         self.__rot += 16
         b = Bullet(10, self.dmg, self.__rot, "./resources/images/trans_heart.png", self, self.enemies)
         b.position = self.position
         self.bullets.append(b)
-        super().shoot(enemy)
+        b = Bullet(10, self.dmg, self.__rot+180, "./resources/images/trans_heart.png", self, self.enemies)
+        b.position = self.position
+        self.bullets.append(b)
+        if self.does_trigger > 3:
+            super().shoot(enemy)
+            self.does_trigger = 0
+        else:
+            self.cooldown = self.max_cooldown
+            self.does_trigger += 1
 
     def clone(self):
         return Spinner(self.enemies)

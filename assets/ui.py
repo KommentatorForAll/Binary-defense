@@ -90,6 +90,7 @@ class Shop:
             cols.extend(self.hold_object.collides_with_list(self.game.assets_paths))
             if len(self.hold_object.collides_with_list(self.game.assets_solid)) > 0:
                 self.game.assets_towers.remove(self.hold_object)
+                self.game.assets_solid.remove(self.hold_object)
                 self.hold_object = None
                 return
             self.hold_object.selected = False

@@ -589,6 +589,8 @@ class GameWindow(arcade.Window):
         self.set_icon(pyglet.image.load("./resources/images/icon.png"))
         game_map = TitleScreen(self)
         self.show_view(game_map)
+        self.bg_music = arcade.load_sound("./resources/sounds/data_stream_bg_music.mp3", True)
+        arcade.play_sound(self.bg_music)
         # game_map.load_map("1")
 
 

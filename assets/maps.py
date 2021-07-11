@@ -112,7 +112,8 @@ class Map:
 
     def spawn(self, enemy: Enemy) -> Enemy:
         e = enemy.clone()
-        e.position = self.start[0] * SCALE * 16, self.start[1] * SCALE * 16 + 32
+        e.position = self.start[0] * SCALE * 16 + (32 if self.start[0] >= 0 else 0), \
+            self.start[1] * SCALE * 16 + (0 if self.start[1] <= 0 else 32)
         e.segment = self.segments[0]
         e.segment_age = -27
         return e

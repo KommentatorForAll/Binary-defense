@@ -69,8 +69,8 @@ class Enemy(arcade.Sprite):
 
     def update(self):
         self.age += 1
-        self.segment_age += 1
-        if self.segment_age * self.speed > self.segment.length * SCALE * 16:
+        self.segment_age += self.speed
+        if self.segment_age > self.segment.length * SCALE * 16:
             self.segment_age = 0
             try:
                 self.segment = self.game.map.segments[self.game.map.segments.index(self.segment)+1]
@@ -101,7 +101,7 @@ class Enemy(arcade.Sprite):
                     enemy.paths = self.game.assets_paths
                     enemy.position = self.position
                     enemy.segment = self.segment
-                    enemy.segment_age = self.segment_age # + random.randrange(ENEMY_SPREAD)
+                    enemy.segment_age = self.segment_age  # + random.randrange(ENEMY_SPREAD)
 
                     self.game.assets_enemies.append(enemy)
 

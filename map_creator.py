@@ -63,6 +63,18 @@ class MapCreator(arcade.View):
         self.mouse_pos = (0, 0)
         self.first = True
 
+        self.ui_assets = arcade.SpriteList(use_spatial_hash=True)
+        spr = arcade.Sprite(
+            "./resources/images/shop.png"
+        )
+        spr.position = WINDOW_WIDTH/2, WINDOW_HEIGHT-54
+        self.ui_assets.append(spr)
+        spr = arcade.Sprite(
+            "./resources/images/info.png"
+        )
+        spr.position = WINDOW_WIDTH - 128, (WINDOW_HEIGHT / 2)-60
+        self.ui_assets.append(spr)
+
         self.segments: List["assets.maps.Segment"] = []
         self.assets_paths: arcade.SpriteList = arcade.SpriteList(use_spatial_hash=True)
 
@@ -72,10 +84,16 @@ class MapCreator(arcade.View):
         self.save_button.position = WINDOW_WIDTH - 128, 64
         self.ui_manager.add_ui_element(self.save_button)
 
+        self.back_button = StartButton("button_big_empty", main.LevelSelector, self.window, text="Back")
+        self.back_button.position = WINDOW_WIDTH - 128, 175
+        self.ui_manager.add_ui_element(self.back_button)
+
     def on_draw(self):
         arcade.start_render()
+        self.draw_grid()
         self.ui_manager.on_draw()
         self.assets_paths.draw(filter=GL_NEAREST)
+        self.ui_assets.draw()
         for path in self.assets_paths:
             path.draw(filter=GL_NEAREST)
         if self.sp_init:
@@ -86,6 +104,17 @@ class MapCreator(arcade.View):
                              (0, 255, 0),
                              4
                              )
+        else:
+            arcade.draw_point(self.mouse_pos[0] * SCALE * 16 + 32, self.mouse_pos[1] * SCALE * 16 + 32, (0, 255, 0), 5)
+
+    def draw_grid(self):
+        for i in range(0, 18):
+            pos = i*SCALE*16
+            arcade.draw_line(pos, 0, pos, WINDOW_HEIGHT, (192, 192, 192), 2)
+
+        for j in range(0, 10):
+            pos = j*SCALE*16
+            arcade.draw_line(0, pos, WINDOW_WIDTH, pos, (192, 192, 192), 2)
 
     def on_hide_view(self):
         self.ui_manager.unregister_handlers()
@@ -99,7 +128,7 @@ class MapCreator(arcade.View):
         pass
 
     def on_mouse_release(self, x: float, y: float, button: int, modifiers: int):
-        r_pnt = max(min(round(x / (SCALE * 16)), 15), 0), max(min(round(y / (SCALE * 16)), 7), 0)
+        r_pnt = self.get_r_pnt(x, y)
         self.mouse_pos = r_pnt
         if not self.sp_init:
             self.start_point = r_pnt
@@ -140,15 +169,19 @@ class MapCreator(arcade.View):
         self.current_start_point = r_pnt[0], r_pnt[1]
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
+        r_pnt = self.get_r_pnt(x, y)
         if not self.sp_init:
+            self.mouse_pos = r_pnt
             return
-        r_pnt = max(min(round(x / (SCALE * 16)), 15), 0), max(min(round(y / (SCALE * 16)), 7), 0)
         dx, dy = [sum((a, -b)) for a, b in zip(r_pnt, self.current_start_point)]
         is_horizontal = abs(dx) >= abs(dy)
         r_pnt = r_pnt[0] if is_horizontal else self.current_start_point[0], \
             r_pnt[1] if not is_horizontal else self.current_start_point[1]
 
         self.mouse_pos = r_pnt
+
+    def get_r_pnt(self, x, y):
+        return max(min(round((x - 32) / (SCALE * 16)), 15), 0), max(min(round((y - 32) / (SCALE * 16)), 8), 0)
 
 
 class WriteMapButton(StartButton):
@@ -214,7 +247,7 @@ class MapSaver(arcade.View):
                 title="Save Map",
                 initialfile=f"{self.name}.map"
             )
-            self.map_creator.segments[:-2].length += 1
+            self.map_creator.segments[-2].length += 1
             file = open(file_name, "w")
             start_point = ','.join([str(x) for x in self.map_creator.start_point])
             segment_str = ';'.join([str(x) for x in self.map_creator.segments[:-1]])
