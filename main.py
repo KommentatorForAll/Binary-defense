@@ -89,6 +89,66 @@ class DeathScreen(arcade.View):
         pass
 
 
+class ResumeButton(StartButton):
+
+    def on_press(self):
+        self.window.show_view(self.switch_to)
+
+
+class QuitButton(StartButton):
+
+    def __init__(self, es: "EscapeScreen", window: arcade.Window):
+        super().__init__("button_big_empty", None, window, text="Quit")
+        self.es = es
+
+    def on_click(self):
+        self.es.ui_manager.add_ui_element(self.es.really_quit_button)
+        self.es.warning = "Confirm quit. You will loose all your progress"
+
+
+class EscapeScreen(arcade.View):
+
+    def __init__(self, tdm: "TowerDefenceMap"):
+        super().__init__()
+        self.tdm = tdm
+
+        self.ui_manager = UIManager()
+
+        self.button_resume = ResumeButton("button_big_empty", tdm, self.window, text="Resume")
+        self.button_resume.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 + 128
+        self.ui_manager.add_ui_element(self.button_resume)
+
+        self.quit_button = QuitButton(self, self.window)
+        self.quit_button.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2
+        self.ui_manager.add_ui_element(self.quit_button)
+
+        self.really_quit_button = StartButton("button_big_empty", TitleScreen, self.window, text="Really Quit")
+        self.really_quit_button.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 128
+
+        self.warning = "Game Paused"
+
+    def on_draw(self):
+        arcade.start_render()
+        # self.ui_manager.on_draw()
+        arcade.draw_text(
+            self.warning,
+            WINDOW_WIDTH / 2,
+            WINDOW_HEIGHT / 2 + 275,
+            (255, 0, 0),
+            font_name="./resources/fonts/Welbut",
+            font_size=28,
+            anchor_x="center"
+            )
+
+    def on_hide_view(self):
+        self.ui_manager.unregister_handlers()
+        # self.ui_manager.disable()
+
+    def on_show_view(self):
+        # self.ui_manager.enable()
+        pass
+
+
 class TowerDefenceMap(arcade.View):
     """
     Class that hosts the main game.
@@ -123,7 +183,7 @@ class TowerDefenceMap(arcade.View):
         self.wave: Optional[assets.maps.Wave] = None
         self._wave_active: bool = False
 
-        self.is_activated = False
+        self.is_activated: bool = True
 
         self.shop: assets.ui.Shop = None
         self.info_ui: assets.ui.InfoUI = assets.ui.InfoUI(self)
@@ -419,6 +479,10 @@ class TowerDefenceMap(arcade.View):
         self.shop.draw(filter=GL_NEAREST)
         # self.ui_manager.on_draw()
 
+    def on_key_press(self, symbol, modifiers):
+        if symbol == arcade.key.ESCAPE:
+            self.window.show_view(EscapeScreen(self))
+
     def update(self, delta_time):
         pass
 
@@ -433,6 +497,9 @@ class TowerDefenceMap(arcade.View):
         self.shop.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
     def on_show_view(self):
+        #if not self.is_activated:
+        print("regisadfasdfas")
+        self.ui_manager.register_handlers()
         self.is_activated = True
         # self.ui_manager.enable()
 
@@ -519,8 +586,7 @@ class LevelSelector(arcade.View):
 
         self.sprites = arcade.SpriteList(use_spatial_hash=True)
 
-        self.button_back = StartButton("button_big_empty", TitleScreen, window, text="Back",
-                                       font="./resources/fonts/Welbut")
+        self.button_back = StartButton("button_big_empty", TitleScreen, window, text="Back")
         self.button_back.position = WINDOW_WIDTH / 2, 64
         self.ui_manager.add_ui_element(self.button_back)
 
@@ -589,8 +655,8 @@ class GameWindow(arcade.Window):
         self.set_icon(pyglet.image.load("./resources/images/icon.png"))
         game_map = TitleScreen(self)
         self.show_view(game_map)
-        self.bg_music = arcade.load_sound("./resources/sounds/data_stream_bg_music.mp3", True)
-        arcade.play_sound(self.bg_music)
+        self.bg_music = arcade.load_sound("./resources/sounds/data_stream_bg_music.mp3")
+        self.bg_music.play(loop=True)
         # game_map.load_map("1")
 
 

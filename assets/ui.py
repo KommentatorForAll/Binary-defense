@@ -159,6 +159,16 @@ class SpeedButtons(arcade.gui.UIImageButton):
         super().on_release()
 
 
+class EscapeButton(main.StartButton):
+
+    def __init__(self, window: arcade.Window, tdm: main.TowerDefenceMap):
+        super().__init__("button_pause", None, window)
+        self.tdm = tdm
+
+    def on_press(self):
+        self.window.show_view(main.EscapeScreen(self.tdm))
+
+
 class InfoUI:
 
     def __init__(self, game: main.TowerDefenceMap):
@@ -178,6 +188,7 @@ class InfoUI:
         self.sprites.append(self.background)
 
         self.sw_button = StartWaveButton(self.game)
+        self.pause_button = EscapeButton(self.game.window, self.game)
 
         self.speed_buttons: List[SpeedButtons] = []
 
@@ -210,6 +221,10 @@ class InfoUI:
         self.sw_button.position = self.middle + 75, self.button_box_topleft[1] - 175
         self.sprites.append(self.sw_button)
         self.game.ui_manager.add_ui_element(self.sw_button)
+
+        self.pause_button.position = self.middle - 75, self.button_box_topleft[1] - 175
+        self.sprites.append(self.pause_button)
+        self.game.ui_manager.add_ui_element(self.pause_button)
 
         x = 24
         i = 1
