@@ -17,9 +17,12 @@ class ShopItem(arcade.gui.UIImageButton):
         self.name: str = name
         self.description: str = description
         self.shop: "Shop" = shop
+        self.active: bool = True
 
     def on_press(self):
-        self.shop.on_press(self)
+        if self.active:
+            self.shop.on_press(self)
+        self.active = not self.active
 
     def on_hover(self):
         self.shop.game.info_ui.info_tower = self
@@ -40,8 +43,6 @@ class Shop:
         self.offset: tuple = (78, 78)
         self.cur_price: int = 0
         self.shop_background = arcade.Sprite("./resources/images/shop.png")
-        self.hitbox_color_not_placeable = arcade.csscolor.RED
-        self.hitbox_color_placeable = arcade.csscolor.GREEN
 
         self.game = game
         # self.path_list = path_list
@@ -54,11 +55,12 @@ class Shop:
     def setup(self):
         spacing = 112
         total_offset = self.offset[0]
+        print(len(self.towers))
         for spr in self.towers:
-            spr.position = (total_offset, self.pos[1])
+            spr.position = total_offset, self.pos[1]
             self.game.ui_manager.add_ui_element(spr)
 
-            self.sprites.append(spr)
+            # self.sprites.append(spr)
 
             total_offset += spacing
 
@@ -80,14 +82,13 @@ class Shop:
         self.hold_object.activated = False
         self.hold_object.selected = True
         self.game.add_sprite(self.hold_object)
+        print(self.hold_object.position)
 
     def on_mouse_release(self, x, y, button, modifiers):
         if self.hold_object is None:
             return
         else:
             self.hold_object.position = x, y
-            cols: list = self.hold_object.collides_with_list(self.game.assets_towers)
-            cols.extend(self.hold_object.collides_with_list(self.game.assets_paths))
             if len(self.hold_object.collides_with_list(self.game.assets_solid)) > 0:
                 self.game.assets_towers.remove(self.hold_object)
                 self.game.assets_solid.remove(self.hold_object)
@@ -224,7 +225,7 @@ class InfoUI:
 
         self.pause_button.position = self.middle - 75, self.button_box_topleft[1] - 175
         self.sprites.append(self.pause_button)
-        self.game.ui_manager.add_ui_element(self.pause_button)
+        # self.game.ui_manager.add_ui_element(self.pause_button)
 
         x = 24
         i = 1

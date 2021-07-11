@@ -140,6 +140,10 @@ class EscapeScreen(arcade.View):
             anchor_x="center"
             )
 
+    def on_key_press(self, symbol, modifiers):
+        if symbol == arcade.key.ESCAPE:
+            self.button_resume.on_press()
+
     def on_hide_view(self):
         self.ui_manager.unregister_handlers()
         # self.ui_manager.disable()
@@ -504,7 +508,8 @@ class TowerDefenseMap(arcade.View):
         # self.ui_manager.enable()
 
     def on_hide_view(self):
-        self.is_activated = False
+        # self.is_activated = False
+        print("purging")
         self.ui_manager.unregister_handlers()
         # self.ui_manager.disable()
 
