@@ -654,7 +654,7 @@ class LevelSelector(arcade.View):
             x += 128
             if x > WINDOW_WIDTH - 128:
                 x = 128
-                y += 128
+                y -= 128
 
     def on_draw(self):
         arcade.start_render()
