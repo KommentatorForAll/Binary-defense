@@ -7,6 +7,7 @@ import main
 from assets.enemies import Enemy
 
 SCALE = 4
+WAVE_INCR = 1.5
 
 
 class Path(arcade.Sprite):
@@ -121,13 +122,19 @@ class Map:
 
 class Wave:
 
-    def __init__(self, enemies: List[Dict[str, any]], game_map: Map, game: main.TowerDefenseMap):
+    def __init__(self, enemies: List[Dict[str, any]], game_map: Map, game: main.TowerDefenseMap, wave_no: int = -1):
         self.cnt: int = 0
         self.delay: int = 0
         self.game_map: Map = game_map
         self.game: main.TowerDefenseMap = game
         self.enemies = enemies
         self.e_ind = random.randrange(len(enemies))
+        if wave_no != -1:
+            self.update_enemies(wave_no)
+
+    def update_enemies(self, wave_no):
+        for i in range(len(self.enemies)):
+            self.enemies[i]["cnt"] = round(self.enemes[i]["cnt"] * WAVE_INCR * wave_no)
 
     def update(self):
         self.delay -= 1

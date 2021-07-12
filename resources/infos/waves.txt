@@ -13,3 +13,10 @@ enemy_0 15 6 enemy_1 15 12 enemy_10 20 20 enemy_1001 30 3
 enemy_1 20 15 enemy_10 20 10 enemy_1001 25 5
 enemy_1 20 50 enemy_10 25 23
 enemy_0 20 49 enemy_1 20 15 enemy_10 20 12 enemy_1001 30 10
+enemy_1 25 100 enemy_mammut 40 5
+enemy_1 25 128 enemy_10 25 128 enemy_1001 25 75
+enemy_1 15 256
+enemy_10 20 256
+enemy_1001 25 256
+enemy_1 25 128 enemy_10 10 128 enemy_1001 25 64
+enemy_10 10 128 enemy_1001 15 256 enemy_mammut 15 64

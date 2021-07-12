@@ -1,6 +1,7 @@
 import arcade
 import numpy as np
 from typing import Optional, Union
+import random
 
 from assets.enemies import Enemy
 
@@ -76,8 +77,8 @@ class Tower(arcade.Sprite):
 class Bullet(arcade.AnimatedTimeBasedSprite):
 
     def __init__(self, speed: int, dmg: float, rot: float, sprite: str, origin: Tower, enemy_list: arcade.SpriteList,
-                 pierce: int = 1):
-        super().__init__(sprite, scale=SCALE)
+                 pierce: int = 1, scale=SCALE):
+        super().__init__(sprite, scale=scale)
         self.turn_right(rot)
         self.forward(speed)
         self.dmg: float = dmg
@@ -180,6 +181,30 @@ class Spinner(Tower):
 
     def clone(self):
         return Spinner(self.enemies)
+
+
+class Defender(Tower):
+
+    def __init__(self, enemy_list: arcade.SpriteList):
+        super().__init__(1, 30, 256,
+                         "./resources/images/windows_defender.png", enemy_list, "./resources/sounds/windoof_error.mp3")
+
+    def shoot(self, enemy: Enemy):
+        angle = get_angle_pnt(self.position, enemy.position)
+        b = Bullet(12,
+                   self.dmg,
+                   angle + random.randrange(-5, 5),
+                   "./resources/images/energy_pebble.png",
+                   self,
+                   self.enemies,
+                   scale=2
+                   )
+        b.position = self.position
+        self.bullets.append(b)
+        super().shoot(enemy)
+
+    def clone(self):
+        return Defender(self.enemies)
 
 
 def get_angle_pnt(p1, p2) -> float:

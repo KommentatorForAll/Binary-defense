@@ -82,7 +82,7 @@ class Shop:
         self.hold_object.activated = False
         self.hold_object.selected = True
         self.game.add_sprite(self.hold_object)
-        print(self.hold_object.position)
+        print(self.hold_object.selected)
 
     def on_mouse_release(self, x, y, button, modifiers):
         if self.hold_object is None:

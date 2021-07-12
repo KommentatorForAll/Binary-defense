@@ -195,9 +195,12 @@ class TowerDefenseMap(arcade.View):
 
         self._current_tps = TPS_NORMAL
 
+        self.col_checker = arcade.SpriteCircle(4, (255, 0, 0))
+
         self.data = 0
         self._lives = 0
         self.wave_no = 0
+        self.wave_amount = 0
 
         self.setup()
 
@@ -227,8 +230,6 @@ class TowerDefenseMap(arcade.View):
         """
         self._lives = amount
         if amount <= 0:
-            print("you died")
-            print("move to endscreen")
             ds = DeathScreen(self.wave_no)
             self.window.show_view(ds)
             return
@@ -350,8 +351,9 @@ class TowerDefenseMap(arcade.View):
             self.availables_waves.append(enemies)
 
         wave_file.close()
+        self.wave_amount = len(self.availables_waves)
 
-        print(self.availables_waves)
+        # print(self.availables_waves)
 
         # Towers
         tower_file = open("resources/infos/towers.txt")
@@ -445,7 +447,10 @@ class TowerDefenseMap(arcade.View):
         """
         if self.wave_active:
             return
-        self.wave = assets.maps.Wave(self.availables_waves[self.wave_no], self.map, self)
+        if self.wave_no < self.wave_amount:
+            self.wave = assets.maps.Wave(self.availables_waves[self.wave_no], self.map, self)
+        else:
+            self.wave = assets.maps.Wave(self.availables_waves[-1], self.map, self, self.wave_no - self.wave_amount + 1)
         self.wave_no += 1
         self.wave_active = True
 
@@ -500,16 +505,25 @@ class TowerDefenseMap(arcade.View):
         pass
 
     def on_mouse_release(self, x, y, button, modifiers):
+        for tower in self.assets_towers:
+            tower.selected = False
+        self.col_checker.position = x, y
+        towers = self.col_checker.collides_with_list(self.assets_towers)
+        if len(towers) > 0:
+            towers[0].selected = True
         self.ui_manager.on_mouse_release(x, y, button, modifiers)
         self.shop.on_mouse_release(x, y, button, modifiers)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        self.ui_manager.on_mouse_motion(x, y, dx, dy)
 
     def on_mouse_drag(self, x, y, dx, dy, button, modifiers):
         self.shop.on_mouse_drag(x, y, dx, dy, button, modifiers)
 
     def on_show_view(self):
-        print(self.window._view)
+        # print(self.window._view)
         # if not self.is_activated:
-        print("regisadfasdfas")
+        # print("regisadfasdfas")
         # self.ui_manager.register_handlers()
         self.is_activated = True
         self.activate = True
@@ -517,12 +531,9 @@ class TowerDefenseMap(arcade.View):
 
     def on_hide_view(self):
         # self.is_activated = False
-        print("purging")
+        # print("purging")
         self.ui_manager.unregister_handlers()
         # self.ui_manager.disable()
-
-    def __str__(self):
-        print("TowerDefenseMap")
 
 
 class LoopingSprite(arcade.Sprite):
