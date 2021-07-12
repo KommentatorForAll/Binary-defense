@@ -11,3 +11,6 @@ As of now, the game does not have any builds. Follow the steps below to run the 
 3. Execute the main.py
 
 Builds might get added later.
+
+# Credits
+Music done by FoxSynergy [OpenGameArt](https://opengameart.org/content/datastream-goddess)
