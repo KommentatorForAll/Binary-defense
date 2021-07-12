@@ -2,3 +2,5 @@ venv
 .idea
 .spyproject
 __pycache__
+dist
+build

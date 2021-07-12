@@ -42,7 +42,7 @@ class Shop:
         self.width: int = 1280
         self.offset: tuple = (78, 78)
         self.cur_price: int = 0
-        self.shop_background = arcade.Sprite("./resources/images/shop.png")
+        self.shop_background = arcade.Sprite("resources/images/shop.png")
 
         self.game = game
         # self.path_list = path_list
@@ -120,9 +120,9 @@ class StartWaveButton(arcade.gui.UIImageButton):
 
     def __init__(self, game: main.TowerDefenseMap):
         super().__init__(
-            arcade.load_texture("./resources/images/start_wave_button.png"),
-            arcade.load_texture("./resources/images/start_wave_button_hover.png"),
-            arcade.load_texture("./resources/images/start_wave_button_click.png")
+            arcade.load_texture("resources/images/start_wave_button.png"),
+            arcade.load_texture("resources/images/start_wave_button_hover.png"),
+            arcade.load_texture("resources/images/start_wave_button_click.png")
             )
         self.game = game
 
@@ -142,9 +142,9 @@ class SpeedButtons(arcade.gui.UIImageButton):
 
     def __init__(self, speed: str, game: main.TowerDefenseMap, buttons: List["SpeedButtons"]):
         super().__init__(
-            arcade.load_texture(f"./resources/images/button_speed_{speed}.png"),
-            arcade.load_texture(f"./resources/images/button_speed_{speed}_hover.png"),
-            arcade.load_texture(f"./resources/images/button_speed_{speed}_active.png"),
+            arcade.load_texture(f"resources/images/button_speed_{speed}.png"),
+            arcade.load_texture(f"resources/images/button_speed_{speed}_hover.png"),
+            arcade.load_texture(f"resources/images/button_speed_{speed}_active.png"),
         )
         self.game = game
         self.speed: str = speed
@@ -183,7 +183,7 @@ class InfoUI:
         self.button_box_topleft: tuple = (0, 0)
         self.margin = 11
         self.middle = self.topleft_pos[0] + self.size[0]/2
-        self.background: arcade.Sprite = arcade.Sprite("./resources/images/info.png")
+        self.background: arcade.Sprite = arcade.Sprite("resources/images/info.png")
         self.background.position = self.center_pos
         self.game.add_sprite(self.background, True)
         self.sprites.append(self.background)
@@ -263,7 +263,7 @@ class InfoUI:
                          self.stats_box_topleft[0] + self.default_offset[0],
                          self.stats_box_topleft[1] - self.default_offset[1],
                          (255, 255, 255),
-                         font_name="./resources/fonts/Welbut",
+                         font_name="resources/fonts/Welbut",
                          font_size=5 * SCALE,
                          anchor_x="left",
                          )
@@ -272,7 +272,7 @@ class InfoUI:
                          self.stats_box_topleft[0] + self.default_offset[0],
                          self.stats_box_topleft[1] - (self.default_offset[1] * 1.7),
                          (255, 255, 255),
-                         font_name="./resources/fonts/Welbut",
+                         font_name="resources/fonts/Welbut",
                          font_size=5 * SCALE,
                          anchor_x="left"
                          )
@@ -280,7 +280,7 @@ class InfoUI:
                          self.stats_box_topleft[0] + self.default_offset[0],
                          self.stats_box_topleft[1] - (self.default_offset[1] * 2.4),
                          (255, 255, 255),
-                         font_name="./resources/fonts/Welbut",
+                         font_name="resources/fonts/Welbut",
                          font_size=5 * SCALE,
                          anchor_x="left"
                          )
@@ -288,7 +288,7 @@ class InfoUI:
                          self.info_box_topleft[0] + self.default_offset[0],
                          self.info_box_topleft[1] - (self.default_offset[1] + 175),
                          (255, 0, 0),
-                         font_name="./resources/fonts/Welbut",
+                         font_name="resources/fonts/Welbut",
                          font_size=3 * SCALE,
                          anchor_x="left"
                          )
@@ -298,7 +298,7 @@ class InfoUI:
                              self.middle,
                              self.info_box_topleft[1] - self.default_offset[1],
                              (255, 255, 255),
-                             font_name="./resources/fonts/Welbut",
+                             font_name="resources/fonts/Welbut",
                              font_size=5 * SCALE,
                              anchor_x="center"
                              )
@@ -306,7 +306,7 @@ class InfoUI:
                              self.middle,
                              self.info_box_topleft[1] - (self.default_offset[1] * 2),
                              (255, 255, 255),
-                             font_name="./resources/fonts/Welbut",
+                             font_name="resources/fonts/Welbut",
                              font_size=4 * SCALE,
                              width=192,
                              anchor_x="center"
@@ -316,7 +316,7 @@ class InfoUI:
                              self.middle,
                              self.info_box_topleft[1] - (self.default_offset[1] * 3),
                              ((not affordable)*255, affordable*255, 0),
-                             font_name="./resources/fonts/Welbut",
+                             font_name="resources/fonts/Welbut",
                              font_size=3 * SCALE,
                              anchor_x="center"
                              )

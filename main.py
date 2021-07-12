@@ -22,7 +22,7 @@ TPS_FASTEST = 150
 
 
 # GUI_STYLE = arcade.gui.UIStyle(
-#     font="./resources/fonts/Welbut",
+#     font="resources/fonts/Welbut",
 #     color=arcade.color.WHITE
 # )
 # arcade.gui.UIStyle.set_default_style(GUI_STYLE)
@@ -32,9 +32,9 @@ class StartButton(arcade.gui.UIImageButton):
 
     def __init__(self, name: str, switch_to, window: arcade.Window, **kwargs):
         super().__init__(
-            arcade.load_texture(f"./resources/images/{name}.png"),
-            arcade.load_texture(f"./resources/images/{name}_hover.png"),
-            arcade.load_texture(f"./resources/images/{name}_press.png"),
+            arcade.load_texture(f"resources/images/{name}.png"),
+            arcade.load_texture(f"resources/images/{name}_hover.png"),
+            arcade.load_texture(f"resources/images/{name}_press.png"),
             **kwargs
         )
         self.switch_to = switch_to
@@ -61,7 +61,7 @@ class DeathScreen(arcade.View):
         self.button_return.position = WINDOW_WIDTH/2, 128
         self.ui_manager.add_ui_element(self.button_return)
 
-        self.death_text = arcade.Sprite("./resources/images/text_death.png", scale=SCALE * 3)
+        self.death_text = arcade.Sprite("resources/images/text_death.png", scale=SCALE * 3)
         self.death_text.position = WINDOW_WIDTH/2, WINDOW_HEIGHT - 128
         self.sprites.append(self.death_text)
 
@@ -75,7 +75,7 @@ class DeathScreen(arcade.View):
             WINDOW_WIDTH/2,
             256,
             (255, 0, 0),
-            font_name="./resources/fonts/Welbut",
+            font_name="resources/fonts/Welbut",
             font_size=20,
             anchor_x="center"
         )
@@ -135,7 +135,7 @@ class EscapeScreen(arcade.View):
             WINDOW_WIDTH / 2,
             WINDOW_HEIGHT / 2 + 275,
             (255, 0, 0),
-            font_name="./resources/fonts/Welbut",
+            font_name="resources/fonts/Welbut",
             font_size=28,
             anchor_x="center"
             )
@@ -333,7 +333,7 @@ class TowerDefenseMap(arcade.View):
         enemy_file.close()
 
         # Waves
-        wave_file = open("./resources/infos/waves.txt")
+        wave_file = open("resources/infos/waves.txt")
         waves = wave_file.read().split("\n")
         for wave in waves:
             if wave[0] == '#':
@@ -376,9 +376,9 @@ class TowerDefenseMap(arcade.View):
         self.shop = assets.ui.Shop(
             towers,
             # {
-            #    "./resources/images/firewall.png": assets.Firewall(self.assets_enemies),
-            #    "./resources/images/proxy.png": assets.Proxy(self.assets_enemies),
-            #    "./resources/images/clam_tk.png": assets.Clam(self.assets_enemies)
+            #    "resources/images/firewall.png": assets.Firewall(self.assets_enemies),
+            #    "resources/images/proxy.png": assets.Proxy(self.assets_enemies),
+            #    "resources/images/clam_tk.png": assets.Clam(self.assets_enemies)
             # },
             (
                 WINDOW_WIDTH / 2,
@@ -562,14 +562,14 @@ class TitleScreen(arcade.View):
         self.sprites.append(self.start_button)
         self.ui_manager.add_ui_element(self.start_button)
 
-        self.title_sprite = arcade.Sprite("./resources/images/title_full.png", scale=6)
+        self.title_sprite = arcade.Sprite("resources/images/title_full.png", scale=6)
         self.title_sprite.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT - 125
         self.sprites.append(self.title_sprite)
 
         self.bg_sprites = arcade.SpriteList()
 
         for i in range(random.randrange(5, 10)):
-            spr = LoopingSprite(f"./resources/images/enemy_{random.randrange(2)}.png", scale=4)
+            spr = LoopingSprite(f"resources/images/enemy_{random.randrange(2)}.png", scale=4)
             spr.position = random.randrange(WINDOW_WIDTH), random.randrange(WINDOW_HEIGHT)
             spr.forward(random.randrange(0, 12) - 6)
             self.bg_sprites.append(spr)
@@ -623,7 +623,7 @@ class LevelSelector(arcade.View):
 
         self.availables_maps: List[str] = []
 
-        self.text_levels = arcade.Sprite("./resources/images/text_levels.png", scale=SCALE * 2)
+        self.text_levels = arcade.Sprite("resources/images/text_levels.png", scale=SCALE * 2)
         self.text_levels.position = WINDOW_WIDTH / 2, WINDOW_HEIGHT - 128
         self.sprites.append(self.text_levels)
 
@@ -634,7 +634,7 @@ class LevelSelector(arcade.View):
         self.bg_sprites = arcade.SpriteList()
 
         for i in range(random.randrange(5, 10)):
-            spr = LoopingSprite(f"./resources/images/enemy_{random.randrange(2)}.png", scale=4)
+            spr = LoopingSprite(f"resources/images/enemy_{random.randrange(2)}.png", scale=4)
             spr.position = random.randrange(WINDOW_WIDTH), random.randrange(WINDOW_HEIGHT)
             spr.forward(random.randrange(0, 12) - 6)
             self.bg_sprites.append(spr)
@@ -679,10 +679,10 @@ class GameWindow(arcade.Window):
     def __init__(self):
         super().__init__(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME)
         self.set_update_rate(1 / TPS_NORMAL)
-        self.set_icon(pyglet.image.load("./resources/images/icon.png"))
+        self.set_icon(pyglet.image.load("resources/images/icon.png"))
         game_map = TitleScreen(self)
         self.show_view(game_map)
-        self.bg_music = arcade.load_sound("./resources/sounds/data_stream_bg_music.mp3")
+        self.bg_music = arcade.load_sound("resources/sounds/data_stream_bg_music.mp3")
         self.bg_music.play(loop=True)
         # game_map.load_map("1")
 

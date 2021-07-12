@@ -112,12 +112,12 @@ class Bullet(arcade.AnimatedTimeBasedSprite):
 class Firewall(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(1, 100, 256, "./resources/images/firewall.png", enemy_list, "./resources/sounds/fire_ball.mp3")
+        super().__init__(1, 100, 256, "resources/images/firewall.png", enemy_list, "resources/sounds/fire_ball.mp3")
 
     def shoot(self, enemy: Enemy):
         super().shoot(enemy)
         for i in range(0, 359, 45):
-            b = Bullet(5, self.dmg, i, "./resources/images/fireball.png", self, self.enemies)
+            b = Bullet(5, self.dmg, i, "resources/images/fireball.png", self, self.enemies)
             self.bullets.append(b)
             b.position = self.position
 
@@ -128,11 +128,11 @@ class Firewall(Tower):
 class Proxy(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(2, 100, 256, "./resources/images/proxy.png", enemy_list, "./resources/sounds/fire_ball.mp3")
+        super().__init__(2, 100, 256, "resources/images/proxy.png", enemy_list, "resources/sounds/fire_ball.mp3")
 
     def shoot(self, enemy: Enemy):
         angle = get_angle_pnt(self.position, enemy.position)
-        b = Bullet(5, self.dmg, angle, "./resources/images/fireball.png", self, self.enemies, pierce=1)
+        b = Bullet(5, self.dmg, angle, "resources/images/fireball.png", self, self.enemies, pierce=1)
         b.position = self.position
         self.bullets.append(b)
         super().shoot(enemy)
@@ -144,11 +144,11 @@ class Proxy(Tower):
 class Clam(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(2, 150, 400, "./resources/images/clam_tk.png", enemy_list, "./resources/sounds/laser.mp3")
+        super().__init__(2, 150, 400, "resources/images/clam_tk.png", enemy_list, "resources/sounds/laser.mp3")
 
     def shoot(self, enemy: Enemy):
         angle = get_angle_pnt(self.position, enemy.position)
-        b = Bullet(20, self.dmg, angle, "./resources/images/laser_0.png", self, self.enemies, pierce=4)
+        b = Bullet(20, self.dmg, angle, "resources/images/laser_0.png", self, self.enemies, pierce=2)
         b.position = self.position
         self.bullets.append(b)
         super().shoot(enemy)
@@ -160,16 +160,16 @@ class Clam(Tower):
 class Spinner(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
-        super().__init__(0.25, 8, 256, "./resources/images/spinner.png", enemy_list, "./resources/sounds/nya.mp3")
+        super().__init__(0.25, 8, 256, "resources/images/spinner.png", enemy_list, "resources/sounds/nya.mp3")
         self.__rot = 0
         self.does_trigger = 0
 
     def shoot(self, enemy: Enemy):
         self.__rot += 16
-        b = Bullet(10, self.dmg, self.__rot, "./resources/images/trans_heart.png", self, self.enemies)
+        b = Bullet(10, self.dmg, self.__rot, "resources/images/trans_heart.png", self, self.enemies)
         b.position = self.position
         self.bullets.append(b)
-        b = Bullet(10, self.dmg, self.__rot+180, "./resources/images/trans_heart.png", self, self.enemies)
+        b = Bullet(10, self.dmg, self.__rot+180, "resources/images/trans_heart.png", self, self.enemies)
         b.position = self.position
         self.bullets.append(b)
         if self.does_trigger > 3:
@@ -187,14 +187,14 @@ class Defender(Tower):
 
     def __init__(self, enemy_list: arcade.SpriteList):
         super().__init__(1, 30, 256,
-                         "./resources/images/windows_defender.png", enemy_list, "./resources/sounds/windoof_error.mp3")
+                         "resources/images/windows_defender.png", enemy_list, "resources/sounds/windoof_error.mp3")
 
     def shoot(self, enemy: Enemy):
         angle = get_angle_pnt(self.position, enemy.position)
         b = Bullet(12,
                    self.dmg,
                    angle + random.randrange(-5, 5),
-                   "./resources/images/energy_pebble.png",
+                   "resources/images/energy_pebble.png",
                    self,
                    self.enemies,
                    scale=2

@@ -13,8 +13,8 @@ WAVE_INCR = 1.5
 class Path(arcade.Sprite):
 
     def __init__(self, rot: int, pos: tuple, tag: str = None):
-        super().__init__("./resources/images/path_bg.png", scale=SCALE)
-        self.fg = arcade.Sprite("./resources/images/path_fg.png", scale=SCALE)
+        super().__init__("resources/images/path_bg.png", scale=SCALE)
+        self.fg = arcade.Sprite("resources/images/path_fg.png", scale=SCALE)
         self.rot = rot
         self.turn_right(rot * 90)
         self.pos = pos
@@ -36,7 +36,7 @@ class Path(arcade.Sprite):
     def _set_tag(self, tag: str):
         self._tag = tag
         if tag == 'f' or tag == 's':
-            self.fg.texture = arcade.load_texture("./resources/images/path_fg_arrow.png")
+            self.fg.texture = arcade.load_texture("resources/images/path_fg_arrow.png")
 
     tag = property(_get_tag, _set_tag)
 
@@ -82,7 +82,7 @@ class Map:
 
     def load_map(self, map_filename: str, local_map=True):
         map_sprites = arcade.SpriteList(use_spatial_hash=True)
-        map_file = open(f"./resources/maps/{map_filename}" if local_map else map_filename)
+        map_file = open(f"resources/maps/{map_filename}" if local_map else map_filename)
         map_data = map_file.read().split(";")
         self.lives = int(map_data[0])
         self.data = int(map_data[1])
@@ -127,14 +127,15 @@ class Wave:
         self.delay: int = 0
         self.game_map: Map = game_map
         self.game: main.TowerDefenseMap = game
-        self.enemies = enemies
+        self.enemies = enemies.copy()
+        print(enemies)
         self.e_ind = random.randrange(len(enemies))
         if wave_no != -1:
             self.update_enemies(wave_no)
 
     def update_enemies(self, wave_no):
         for i in range(len(self.enemies)):
-            self.enemies[i]["cnt"] = round(self.enemes[i]["cnt"] * WAVE_INCR * wave_no)
+            self.enemies[i]["cnt"] = round(self.enemies[i]["cnt"] * WAVE_INCR * wave_no)
 
     def update(self):
         self.delay -= 1

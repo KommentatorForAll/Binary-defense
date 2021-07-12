@@ -1,6 +1,6 @@
 #name shop_icon class price sound description
-Firewall ./resources/images/firewall.png Firewall 300 A Firewall shooting in 8 directions damaging a lot of packages
-Proxy ./resources/images/proxy_shop.png Proxy 250 The Proxy targets individual packages dealing a reasonable amount of damage
-Clam_Scan ./resources/images/clam_tk_shop.png Clam 500 Clam-scan, even though a community driven service, can stop packages real fast
-Spinner ./resources/images/spinner_shop.png Spinner 690 Skirt goes spinny \n kill transphobia \n with cuteness
-Windows_Defender ./resources/images/windows_defender_shop.png Defender 512 Windows defender. nothing special
+Firewall resources/images/firewall.png Firewall 300 A wall of fire
+Proxy resources/images/proxy_shop.png Proxy 250 Single package targeting
+Clam_Scan resources/images/clam_tk_shop.png Clam 500 Community is strong.
+Spinner resources/images/spinner_shop.png Spinner 690 Skirt goes spinny
+Windows_Defender resources/images/windows_defender_shop.png Defender 512 Nothing special
