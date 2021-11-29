@@ -14,3 +14,19 @@ Builds might get added later.
 
 # Credits
 Music done by FoxSynergy [OpenGameArt](https://opengameart.org/content/datastream-goddess)
+
+
+https://user-images.githubusercontent.com/46420447/143848782-8f80a448-08a7-476a-aa5d-d1bd79794b75.mp4
+
+
+
+https://user-images.githubusercontent.com/46420447/143848791-44865fe1-e7b2-4836-a187-580a0244fec8.mp4
+
+
+
+https://user-images.githubusercontent.com/46420447/143848803-e10cc65f-4e09-485f-bdc6-618e8aae0760.mp4
+
+
+
+https://user-images.githubusercontent.com/46420447/143848811-dad99ad7-bb50-47f4-8e96-6845c2ef9ab5.mp4
+
